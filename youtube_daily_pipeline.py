@@ -42,29 +42,9 @@ def get_trending_tech_news():
     return combined_news
 
 # ---------------------------------------------------------
-# 3. Dynamic Model Resolver & Script Generation
+# 3. Robust Multi-Model Script Generator
 # ---------------------------------------------------------
-def get_working_model():
-    # Priority order for standard models
-    candidates = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"]
-    try:
-        available_models = [m.name for m in client.models.list()]
-        print(f"📋 Available models for this key: {available_models[:4]}...")
-        for candidate in candidates:
-            for m in available_models:
-                if candidate in m:
-                    return m
-        # If no specific match, use the first model supporting content generation
-        if available_models:
-            return available_models[0]
-    except Exception as e:
-        print(f"⚠️ Could not list models: {e}. Falling back to default.")
-    return "gemini-2.0-flash"
-
 def generate_content(news_summary):
-    selected_model = get_working_model()
-    print(f"🤖 Generating content with model: {selected_model}...")
-    
     prompt = f"""
 You are the lead content creator for the YouTube channel 'Trend Pulse Daily'.
 Based on these top trending technology headlines:
@@ -77,11 +57,40 @@ TITLE: <Write a high-CTR, click-worthy title under 70 chars with hashtags like #
 DESCRIPTION: <Write a concise description summarizing the story with relevant tech tags>
 SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues, scene descriptions, or speaker names. Keep it punchy and conversational.>
 """
-    response = client.models.generate_content(
-        model=selected_model,
-        contents=prompt
-    )
-    text = response.text
+    # Models to try in sequence based on Google's error recommendations & active account models
+    candidate_models = [
+        "gemini-3.8-flash",
+        "gemini-2.5-pro",
+        "models/gemini-2.5-pro",
+        "models/gemini-3.8-flash"
+    ]
+
+    # Dynamically pull remaining models from account
+    try:
+        listed = [m.name for m in client.models.list()]
+        for m in listed:
+            clean_name = m.replace("models/", "")
+            if clean_name not in candidate_models:
+                candidate_models.append(clean_name)
+    except Exception as e:
+        print(f"⚠️ Could not list models: {e}")
+
+    text = None
+    for model_name in candidate_models:
+        try:
+            print(f"🤖 Attempting generation with model: {model_name}...")
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt
+            )
+            text = response.text
+            print(f"🎉 Successfully generated content using: {model_name}")
+            break
+        except Exception as err:
+            print(f"⚠️ Model {model_name} failed: {err}. Trying next...")
+
+    if not text:
+        raise RuntimeError("❌ All candidate models failed to generate content.")
 
     title = "Top Tech Trends Today #Shorts #TechNews"
     desc = "Daily technology briefing by Trend Pulse Daily."
