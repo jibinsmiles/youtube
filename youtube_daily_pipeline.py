@@ -4,11 +4,13 @@ import json
 import textwrap
 import feedparser
 import requests
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 from gtts import gTTS
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from moviepy.editor import ColorClip, TextClip, CompositeVideoClip, AudioFileClip
+from moviepy.editor import ImageClip, AudioFileClip
 
 # ---------------------------------------------------------
 # 1. Environment & Configuration
@@ -64,19 +66,12 @@ SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues
     models_to_try = [
         "gemini-2.0-flash",
         "gemini-2.5-flash",
-        "gemini-3.8-flash",
         "gemini-1.5-flash-latest"
     ]
 
     generated_text = None
     headers = {"Content-Type": "application/json"}
-    payload = {
-        "contents": [
-            {
-                "parts": [{"text": prompt_text}]
-            }
-        ]
-    }
+    payload = {"contents": [{"parts": [{"text": prompt_text}]}]}
 
     for model_name in models_to_try:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_KEY}"
@@ -91,13 +86,12 @@ SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues
                 break
             else:
                 err_msg = data.get("error", {}).get("message", res.text)
-                print(f"⚠️ {model_name} responded with status {res.status_code}: {err_msg[:120]}...", flush=True)
+                print(f"⚠️ {model_name} error: {err_msg[:100]}...", flush=True)
         except Exception as err:
             print(f"⚠️ Request to {model_name} failed: {err}", flush=True)
 
-    # Fallback script generation if AI quota is completely exhausted
     if not generated_text:
-        print("⚡ Free AI quota limit reached. Using dynamic fallback template so upload succeeds...", flush=True)
+        print("⚡ Free AI quota limit reached. Using dynamic fallback template...", flush=True)
         title = f"{top_headline[:50]} #Shorts #TechNews #TrendPulseDaily"
         desc = f"Latest technology news briefing:\n{news_summary}\n\nSubscribe to Trend Pulse Daily for daily updates!"
         script = f"Welcome back to Trend Pulse Daily! Here are today's top tech stories. First up: {top_headline}. Across the tech space, major developments are unfolding rapidly with significant industry impact. Follow and subscribe for your daily dose of technology updates!"
@@ -124,7 +118,7 @@ SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues
 
 
 # ---------------------------------------------------------
-# 4. Generate Voice Narration (TTS)
+# 4. Voice Narration (TTS)
 # ---------------------------------------------------------
 def create_voiceover(script_text, audio_path="voice.mp3"):
     print("🎙️ Generating voiceover narration with gTTS...", flush=True)
@@ -135,45 +129,62 @@ def create_voiceover(script_text, audio_path="voice.mp3"):
 
 
 # ---------------------------------------------------------
-# 5. Build Video with MoviePy
+# 5. Visual Frame Generation with Pillow (No ImageMagick Needed)
 # ---------------------------------------------------------
-def build_short_video(audio_path, script_text, output_path="final_video.mp4"):
-    print("🎬 Rendering video with MoviePy...", flush=True)
+def create_card_image(headline, script_text, output_image_path="card.png"):
+    width, height = 1080, 1920
+    # Gradient/Dark tech background
+    img = Image.new("RGB", (width, height), color=(15, 23, 42))
+    draw = ImageDraw.Draw(img)
+
+    # Load system font or fall back to default
+    try:
+        font_header = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 60)
+        font_sub = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 44)
+        font_body = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 38)
+    except Exception:
+        font_header = font_sub = font_body = ImageFont.load_default()
+
+    # Brand badge banner
+    draw.rounded_rectangle([(80, 140), (1000, 260)], radius=20, fill=(30, 41, 59))
+    draw.text((width // 2, 200), "TREND PULSE DAILY", fill=(0, 229, 255), font=font_header, anchor="mm")
+
+    # Category chip
+    draw.rounded_rectangle([(80, 310), (360, 370)], radius=15, fill=(239, 68, 68))
+    draw.text((220, 340), "BREAKING TECH", fill="white", font=font_sub, anchor="mm")
+
+    # Headline block
+    wrapped_headline = textwrap.fill(headline, width=28)
+    draw.text((80, 420), wrapped_headline, fill=(255, 255, 255), font=font_header, spacing=20)
+
+    # Narrative preview card
+    draw.rounded_rectangle([(80, 850), (1000, 1600)], radius=25, fill=(30, 41, 59))
+    wrapped_body = textwrap.fill(script_text[:350] + ("..." if len(script_text) > 350 else ""), width=36)
+    draw.text((120, 920), wrapped_body, fill=(203, 213, 225), font=font_body, spacing=18)
+
+    # Footer call to action
+    draw.text((width // 2, 1750), "SUBSCRIBE FOR DAILY UPDATES", fill=(148, 163, 184), font=font_sub, anchor="mm")
+
+    img.save(output_image_path)
+    print(f"✅ Generated visual frame card at {output_image_path}", flush=True)
+    return output_image_path
+
+
+def build_short_video(audio_path, headline, script_text, output_path="final_video.mp4"):
+    print("🎬 Rendering video with MoviePy and Pillow...", flush=True)
     audio = AudioFileClip(audio_path)
     duration = audio.duration
 
-    bg_clip = ColorClip(size=(1080, 1920), color=(15, 18, 26), duration=duration)
-    wrapped_text = "\n\n".join(textwrap.wrap(script_text, width=32))
+    card_image_path = create_card_image(headline, script_text)
+    video_clip = ImageClip(card_image_path).set_duration(duration).set_audio(audio)
 
-    try:
-        txt_clip = TextClip(
-            wrapped_text,
-            fontsize=46,
-            color="white",
-            font="Liberation-Sans-Bold",
-            size=(920, 1500),
-            method="caption",
-        ).set_position(("center", "center")).set_duration(duration)
-
-        header_clip = TextClip(
-            "TREND PULSE DAILY",
-            fontsize=52,
-            color="#00E5FF",
-            font="Liberation-Sans-Bold",
-        ).set_position(("center", 180)).set_duration(duration)
-
-        final_clip = CompositeVideoClip([bg_clip, header_clip, txt_clip]).set_audio(audio)
-    except Exception as e:
-        print(f"⚠️ TextClip fallback: {e}", flush=True)
-        final_clip = bg_clip.set_audio(audio)
-
-    final_clip.write_videofile(
+    video_clip.write_videofile(
         output_path,
         fps=24,
         codec="libx264",
         audio_codec="aac",
         threads=2,
-        preset="ultrafast",
+        preset="ultrafast"
     )
     print(f"✅ Video rendered successfully at {output_path}", flush=True)
     return output_path
@@ -191,50 +202,4 @@ def upload_to_youtube(video_path, title, description):
         client_id=CLIENT_ID,
         client_secret=CLIENT_SECRET,
     )
-    youtube = build("youtube", "v3", credentials=creds)
-
-    body = {
-        "snippet": {
-            "title": title[:100],
-            "description": description,
-            "tags": ["Technology", "Tech News", "Trend Pulse Daily", "Shorts", "AI"],
-            "categoryId": "28",
-        },
-        "status": {
-            "privacyStatus": "public",
-            "selfDeclaredMadeForKids": False,
-        },
-    }
-
-    media = MediaFileUpload(video_path, chunksize=-1, resumable=True, mimetype="video/mp4")
-    request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
-
-    print(f"📤 Uploading '{title}' to @TrendPulseDailyIN...", flush=True)
-    response = None
-    while response is None:
-        status, response = request.next_chunk()
-        if status:
-            print(f"Uploaded {int(status.progress() * 100)}%", flush=True)
-
-    video_id = response.get("id")
-    print(f"🎉 SUCCESS! Video published with ID: https://youtu.be/{video_id}", flush=True)
-
-
-# ---------------------------------------------------------
-# Main Execution Pipeline
-# ---------------------------------------------------------
-def main():
-    try:
-        news_summary, top_headline = get_trending_tech_news()
-        title, desc, script = generate_content(news_summary, top_headline)
-        audio_file = create_voiceover(script)
-        video_file = build_short_video(audio_file, script)
-        upload_to_youtube(video_file, title, desc)
-        print("🏁 Workflow completed successfully!", flush=True)
-    except Exception as err:
-        print(f"❌ Pipeline failed: {err}", flush=True)
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
+    youtube
