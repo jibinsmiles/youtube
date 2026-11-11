@@ -63,10 +63,10 @@ DESCRIPTION: <Write a concise description summarizing the story with relevant te
 SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues, scene descriptions, or speaker names. Keep it punchy and conversational.>
 """
     models_to_try = [
-        "gemini-2.5-flash",
-        "gemini-2.5-pro",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
+            "gemini-3.1-pro-preview",
+            "models/gemini-3.1-pro-preview",
+            "gemini-2.5-flash",
+            "models/gemini-2.5-flash"
     ]
 
     text = None
