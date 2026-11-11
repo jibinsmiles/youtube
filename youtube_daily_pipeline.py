@@ -24,7 +24,11 @@ if not all([GEMINI_KEY, CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN]):
     print("❌ Error: Missing required environment variables in GitHub Secrets.", flush=True)
     sys.exit(1)
 
-client = genai.Client(api_key=GEMINI_KEY)
+# Enforce v1beta to ensure standard models are recognized without 404s
+client = genai.Client(
+    api_key=GEMINI_KEY,
+    http_options={"api_version": "v1beta"}
+)
 
 
 # ---------------------------------------------------------
@@ -72,7 +76,7 @@ SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues
     text = None
     for m in models_to_try:
         try:
-            print(f"🤖 Calling model: {m}...", flush=True)
+            print(f"🤖 Calling model: {m} on v1beta...", flush=True)
             response = client.models.generate_content(
                 model=m,
                 contents=prompt,
