@@ -148,17 +148,17 @@ def create_card_image(headline, script_text, output_image_path="card.png"):
     draw = ImageDraw.Draw(img)
 
     try:
-        font_header = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 60)
-        font_sub = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 44)
-        font_body = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 38)
+        font_header = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 56)
+        font_sub = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 40)
+        font_body = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 36)
     except Exception:
         font_header = font_sub = font_body = ImageFont.load_default()
 
     draw.rounded_rectangle([(80, 140), (1000, 260)], radius=20, fill=(30, 41, 59))
     draw.text((width // 2, 200), "TREND PULSE DAILY", fill=(0, 229, 255), font=font_header, anchor="mm")
 
-    draw.rounded_rectangle([(80, 310), (360, 370)], radius=15, fill=(239, 68, 68))
-    draw.text((220, 340), "BREAKING TECH", fill="white", font=font_sub, anchor="mm")
+    draw.rounded_rectangle([(80, 310), (380, 370)], radius=15, fill=(239, 68, 68))
+    draw.text((230, 340), "BREAKING TECH", fill="white", font=font_sub, anchor="mm")
 
     wrapped_headline = textwrap.fill(headline, width=28)
     draw.text((80, 420), wrapped_headline, fill=(255, 255, 255), font=font_header, spacing=20)
@@ -183,4 +183,74 @@ def build_short_video(audio_path, headline, script_text, output_path="final_vide
     video_clip = ImageClip(card_image_path).set_duration(duration).set_audio(audio)
 
     video_clip.write_videofile(
-        output
+        output_path,
+        fps=24,
+        codec="libx264",
+        audio_codec="aac",
+        threads=2,
+        preset="ultrafast",
+        logger=None
+    )
+    print(f"✅ Video rendered successfully at {output_path}", flush=True)
+    return output_path
+
+
+# ---------------------------------------------------------
+# 6. YouTube Headless Direct Upload
+# ---------------------------------------------------------
+def upload_to_youtube(video_path, title, description):
+    print("🚀 Authenticating with YouTube Data API v3 (Headless)...", flush=True)
+    creds = Credentials(
+        None,
+        refresh_token=REFRESH_TOKEN,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+    )
+    youtube = build("youtube", "v3", credentials=creds)
+
+    body = {
+        "snippet": {
+            "title": title[:100],
+            "description": description,
+            "tags": ["Technology", "Tech News", "Trend Pulse Daily", "Shorts", "AI"],
+            "categoryId": "28",
+        },
+        "status": {
+            "privacyStatus": "public",
+            "selfDeclaredMadeForKids": False,
+        },
+    }
+
+    media = MediaFileUpload(video_path, chunksize=-1, resumable=True, mimetype="video/mp4")
+    request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+
+    print(f"📤 Uploading '{title}' to @TrendPulseDailyIN...", flush=True)
+    response = None
+    while response is None:
+        status, response = request.next_chunk()
+        if status:
+            print(f"Uploaded {int(status.progress() * 100)}%", flush=True)
+
+    video_id = response.get("id")
+    print(f"🎉 SUCCESS! Video published with ID: https://youtu.be/{video_id}", flush=True)
+
+
+# ---------------------------------------------------------
+# Main Execution Pipeline
+# ---------------------------------------------------------
+def main():
+    try:
+        news_summary, top_headline = get_trending_tech_news()
+        title, desc, script = generate_content(news_summary, top_headline)
+        audio_file = create_voiceover(script)
+        video_file = build_short_video(audio_file, top_headline, script)
+        upload_to_youtube(video_file, title, desc)
+        print("🏁 Workflow completed successfully!", flush=True)
+    except Exception as err:
+        print(f"❌ Pipeline failed: {err}", flush=True)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
