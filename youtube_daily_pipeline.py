@@ -4,7 +4,7 @@ import textwrap
 import feedparser
 import requests
 from gtts import gTTS
-import google.generativeai as genai
+from google import genai
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -22,7 +22,7 @@ if not all([GEMINI_KEY, CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN]):
     print("❌ Error: Missing required environment variables in GitHub Secrets.")
     sys.exit(1)
 
-genai.configure(api_key=GEMINI_KEY)
+client = genai.Client(api_key=GEMINI_KEY)
 
 # ---------------------------------------------------------
 # 2. Fetch Trending Headlines
@@ -46,7 +46,6 @@ def get_trending_tech_news():
 # ---------------------------------------------------------
 def generate_content(news_summary):
     print("🤖 Prompting Gemini to craft video script and metadata...")
-    model = genai.GenerativeModel("gemini-1.5-flash")
     
     prompt = f"""
 You are the lead content creator for the YouTube channel 'Trend Pulse Daily'.
@@ -60,7 +59,10 @@ TITLE: <Write a high-CTR, click-worthy title under 70 chars with hashtags like #
 DESCRIPTION: <Write a concise description summarizing the story with relevant tech tags>
 SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues, scene descriptions, or speaker names. Keep it punchy and conversational.>
 """
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
     text = response.text
 
     title = "Top Tech Trends Today #Shorts #TechNews"
