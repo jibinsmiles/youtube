@@ -43,12 +43,12 @@ def get_trending_tech_news():
     print(f"✅ Retrieved headlines:\n{combined_news}", flush=True)
     return combined_news
 
-# ---------------------------------------------------------
-# 3. Robust Script Generation
-# ---------------------------------------------------------
-def generate_content(news_summary):
-    print("🤖 Prompting Gemini to craft video script and metadata...", flush=True)
-    prompt = f"""
+    # ---------------------------------------------------------
+    # 3. Script Generation
+    # ---------------------------------------------------------
+    def generate_content(news_summary):
+        print("🤖 Prompting Gemini to craft video script and metadata...", flush=True)
+        prompt = f"""
 You are the lead content creator for the YouTube channel 'Trend Pulse Daily'.
 Based on these top trending technology headlines:
 {news_summary}
@@ -60,57 +60,50 @@ TITLE: <Write a high-CTR, click-worthy title under 70 chars with hashtags like #
 DESCRIPTION: <Write a concise description summarizing the story with relevant tech tags>
 SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues, scene descriptions, or speaker names. Keep it punchy and conversational.>
 """
-    candidate_models = [
-        "gemini-2.5-pro",
-        "models/gemini-2.5-pro",
-        "gemini-3.8-flash",
-        "models/gemini-3.8-flash"
-    ]
+        # Exact models specified by Google's API messages
+        models_to_try = [
+            "gemini-3.1-pro-preview",
+            "models/gemini-3.1-pro-preview",
+            "gemini-2.5-flash",
+            "models/gemini-2.5-flash"
+        ]
 
-    try:
-        listed = [m.name for m in client.models.list()]
-        for m in listed:
-            clean_name = m.replace("models/", "")
-            if clean_name not in candidate_models:
-                candidate_models.append(clean_name)
-    except Exception as e:
-        print(f"⚠️ Could not list models: {e}", flush=True)
+        text = None
+        for m in models_to_try:
+            try:
+                print(f"🤖 Calling model: {m}...", flush=True)
+                response = client.models.generate_content(
+                    model=m,
+                    contents=prompt
+                )
+                if response and response.text:
+                    text = response.text
+                    print(f"🎉 Successfully generated content using: {m}", flush=True)
+                    break
+            except Exception as err:
+                print(f"⚠️ {m} failed: {err}", flush=True)
 
-    text = None
-    for model_name in candidate_models:
-        try:
-            print(f"🤖 Trying generation with model: {model_name}...", flush=True)
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt
-            )
-            text = response.text
-            print(f"🎉 Successfully generated content using: {model_name}", flush=True)
-            break
-        except Exception as err:
-            print(f"⚠️ Model {model_name} failed: {err}", flush=True)
+        if not text:
+            raise RuntimeError("❌ Could not generate content with available Gemini models.")
 
-    if not text:
-        raise RuntimeError("❌ All candidate models failed to generate content.")
+        title = "Top Tech Trends Today #Shorts #TechNews"
+        desc = "Daily technology briefing by Trend Pulse Daily."
+        script = ""
 
-    title = "Top Tech Trends Today #Shorts #TechNews"
-    desc = "Daily technology briefing by Trend Pulse Daily."
-    script = ""
+        for line in text.splitlines():
+            if line.startswith("TITLE:"):
+                title = line.replace("TITLE:", "").strip()
+            elif line.startswith("DESCRIPTION:"):
+                desc = line.replace("DESCRIPTION:", "").strip()
+            elif line.startswith("SCRIPT:"):
+                script = text.split("SCRIPT:", 1)[1].strip()
+                break
 
-    for line in text.splitlines():
-        if line.startswith("TITLE:"):
-            title = line.replace("TITLE:", "").strip()
-        elif line.startswith("DESCRIPTION:"):
-            desc = line.replace("DESCRIPTION:", "").strip()
-        elif line.startswith("SCRIPT:"):
-            script = text.split("SCRIPT:", 1)[1].strip()
-            break
+        if not script:
+            script = text.strip()
 
-    if not script:
-        script = text.strip()
-
-    print(f"✅ Generated Title: {title}", flush=True)
-    return title, desc, script
+        print(f"✅ Generated Title: {title}", flush=True)
+        return title, desc, script
 
 # ---------------------------------------------------------
 # 4. Generate Voice Narration (TTS)
