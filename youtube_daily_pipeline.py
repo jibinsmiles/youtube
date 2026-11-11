@@ -42,10 +42,28 @@ def get_trending_tech_news():
     return combined_news
 
 # ---------------------------------------------------------
-# 3. Generate Script with Gemini
+# 3. Dynamic Model Resolver & Script Generation
 # ---------------------------------------------------------
+def get_working_model():
+    # Priority order for standard models
+    candidates = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"]
+    try:
+        available_models = [m.name for m in client.models.list()]
+        print(f"📋 Available models for this key: {available_models[:4]}...")
+        for candidate in candidates:
+            for m in available_models:
+                if candidate in m:
+                    return m
+        # If no specific match, use the first model supporting content generation
+        if available_models:
+            return available_models[0]
+    except Exception as e:
+        print(f"⚠️ Could not list models: {e}. Falling back to default.")
+    return "gemini-2.0-flash"
+
 def generate_content(news_summary):
-    print("🤖 Prompting Gemini to craft video script and metadata...")
+    selected_model = get_working_model()
+    print(f"🤖 Generating content with model: {selected_model}...")
     
     prompt = f"""
 You are the lead content creator for the YouTube channel 'Trend Pulse Daily'.
@@ -60,7 +78,7 @@ DESCRIPTION: <Write a concise description summarizing the story with relevant te
 SCRIPT: <Write pure spoken narration text only. Do not include sound effect cues, scene descriptions, or speaker names. Keep it punchy and conversational.>
 """
     response = client.models.generate_content(
-        model="gemini-3.0-flash",
+        model=selected_model,
         contents=prompt
     )
     text = response.text
