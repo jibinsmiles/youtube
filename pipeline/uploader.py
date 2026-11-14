@@ -92,6 +92,12 @@ def upload_video(service, cfg, kind, video_path, script, sources, thumbnail=None
                 raise RuntimeError("YouTube API daily quota exceeded (default 10,000 units; one upload ≈ 1,600)")
             raise
     video_id = response["id"]
+    actual = (response.get("status") or {}).get("privacyStatus", privacy)
+    if actual != privacy:
+        log(f"⚠️ Requested '{privacy}' but YouTube set the video to '{actual}'. If it stays private, the Google "
+            "Cloud project has not passed YouTube's API compliance audit (uploads from unaudited projects are "
+            "locked private) — apply for the audit at support.google.com/youtube/contact/yt_api_form")
+        privacy = actual
 
     if thumbnail and kind == "long":
         try:

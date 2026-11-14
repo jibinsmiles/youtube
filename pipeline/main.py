@@ -157,7 +157,7 @@ def main(argv=None):
             state.record_story(story.id, story.title, kind, script["title"])
             state.save()
             studio = f"https://studio.youtube.com/video/{vid}/edit"
-            label = {"private": "PRIVATE — needs your approval", "public": "LIVE"}[privacy]
+            label = {"private": "PRIVATE — needs your approval", "public": "LIVE"}.get(privacy, privacy.upper())
             if publish_at:
                 label = f"PRIVATE — auto-publishes {publish_at} unless you delete/edit it"
             log(f"🎉 Uploaded ({label}): {studio}")

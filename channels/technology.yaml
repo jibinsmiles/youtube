@@ -92,7 +92,7 @@ visuals:
   fallback_queries: ["technology", "futuristic abstract", "person using smartphone", "city night lights"]
 
 publish:
-  mode: review                 # review = upload private + ping you | veto = private, auto-publishes after veto_hours | auto = public immediately
+  mode: auto                   # auto = public immediately | veto = private, auto-publishes after veto_hours | review = private, you publish by hand
   veto_hours: 3
   category_id: "28"            # Science & Technology
   default_language: en

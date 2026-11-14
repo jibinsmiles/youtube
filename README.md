@@ -35,12 +35,11 @@ Replace your old `youtube_daily_pipeline.py` and `.github/workflows/daily_robot.
 **Background music (optional but recommended):** drop royalty-free `.mp3` files into `assets/music/`
 (e.g. from YouTube Audio Library). One is picked at random and automatically lowered under the voice.
 
-## First run
-1. Actions → *Daily video robot* → **Run workflow** → `kind = short`, `dry_run = true`.
-2. Download the `dry-run-video` artifact and watch it. Do the same with `kind = long`.
-3. Happy? Leave `publish.mode: review` for the first week. Uploads arrive **private** with a Studio link;
-   you watch and press Publish. Later you can switch to `veto` (auto-publishes after 3 h unless you delete it)
-   or `auto`.
+## Running it
+The schedule runs automatically; every run uploads straight to the channel (`publish.mode: auto` = public
+immediately). To trigger one by hand: Actions → *Daily video robot* → **Run workflow** (`kind = auto | short | long`).
+Nothing is saved as a downloadable file. If you want a safety net, set `publish.mode: veto` (private, goes public
+after 3 h unless you delete it) or `review` (private until you publish it in YouTube Studio).
 
 Local offline check (no API keys): `python scripts/smoke_test.py`
 

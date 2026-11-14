@@ -11,9 +11,6 @@ on:
       kind:
         description: "auto | short | long"
         default: "auto"
-      dry_run:
-        description: "true = render only, do not upload (video is attached as an artifact)"
-        default: "false"
 
 permissions:
   contents: write            # lets the job commit data/state.json back to the repo
@@ -54,12 +51,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           INPUT_KIND: ${{ github.event.inputs.kind }}
-          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
           KIND="${INPUT_KIND:-auto}"
-          EXTRA=""
-          if [ "$INPUT_DRY_RUN" = "true" ]; then EXTRA="--dry-run"; fi
-          python -m pipeline.main --channel technology --kind "$KIND" $EXTRA
+          python -m pipeline.main --channel technology --kind "$KIND"
 
       - name: Save state (what we already covered)
         if: always()
@@ -72,11 +66,3 @@ jobs:
             git pull --rebase origin "${GITHUB_REF_NAME}" || true
             git push || true
           fi
-
-      - name: Attach dry-run video
-        if: ${{ github.event.inputs.dry_run == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dry-run-video
-          path: out/
-          retention-days: 3
