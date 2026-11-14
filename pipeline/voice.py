@@ -59,6 +59,12 @@ _CLEAN = ("silenceremove=start_periods=1:start_duration=0:start_threshold=-55dB:
           f"apad=pad_dur={PAD_SECONDS}")
 
 
+_CLEAN_SAFE = ("silenceremove=start_periods=1:start_duration=0:start_threshold=-55dB:start_silence=0.04,"
+               "areverse,silenceremove=start_periods=1:start_duration=0:start_threshold=-55dB:start_silence=0.08,areverse,"
+               "highpass=f=70,acompressor=threshold=0.125:ratio=2.5:attack=8:release=120:makeup=1.5,"
+               f"apad=pad_dur={PAD_SECONDS}")
+
+
 def describe_audio(path):
     """Short text for the run log: duration plus any silent stretches over 0.35 s inside the clip."""
     total = probe_duration(path)
@@ -70,9 +76,9 @@ def describe_audio(path):
     return f"{total:.1f}s" + (f" gaps[{', '.join(gaps)}]" if gaps else "")
 
 
-def _to_wav(src, dst, input_args=()):
+def _to_wav(src, dst, input_args=(), chain=None):
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *input_args, "-i", str(src), "-ar", "44100", "-ac", "1",
-                    "-af", _CLEAN, str(dst)], check=True)
+                    "-af", chain or _CLEAN, str(dst)], check=True)
 
 
 def analyze_speech(path):
@@ -174,7 +180,8 @@ class Narrator:
             w.setsampwidth(2)
             w.setframerate(int(rate))
             w.writeframes(pcm.tobytes())
-        _to_wav(raw, out_wav)
+        _to_wav(raw, out_wav, chain=_CLEAN_SAFE)
+        log(f"      raw {describe_audio(raw)}  ->  clean {describe_audio(out_wav)}")
         total, speech, gap = analyze_speech(out_wav)
         if speech < max(0.4, len(text.split()) / 6.5):
             raise RuntimeError(f"kokoro produced almost no speech ({speech:.1f}s for {len(text.split())} words)")
