@@ -45,12 +45,23 @@ def probe_duration(path):
 
 # Trim the silence TTS engines leave at both ends (keeps natural pauses inside the sentence), roll off rumble,
 # apply gentle compression for a more even, "broadcast" voice, then add a fixed breathing gap.
-_CLEAN = ("silenceremove=start_periods=1:start_duration=0:start_threshold=-50dB,"
-          "areverse,silenceremove=start_periods=1:start_duration=0:start_threshold=-50dB,areverse,"
-          "silenceremove=stop_periods=-1:stop_duration=0.6:stop_threshold=-45dB:stop_silence=0.3,"   # squeeze long dead gaps inside a clip
-
+_CLEAN = ("silenceremove=start_periods=1:start_duration=0:start_threshold=-55dB:start_silence=0.04,"
+          "areverse,silenceremove=start_periods=1:start_duration=0:start_threshold=-55dB:start_silence=0.08,areverse,"
+          # squeeze long dead gaps inside a clip down to ~0.25 s, without touching short natural pauses or soft words
+          "silenceremove=stop_periods=-1:stop_duration=0.5:stop_threshold=-50dB:stop_silence=0.25,"
           "highpass=f=70,acompressor=threshold=0.125:ratio=2.5:attack=8:release=120:makeup=1.5,"
           f"apad=pad_dur={PAD_SECONDS}")
+
+
+def describe_audio(path):
+    """Short text for the run log: duration plus any silent stretches over 0.35 s inside the clip."""
+    total = probe_duration(path)
+    out = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-af",
+                          "silencedetect=n=-50dB:d=0.35", "-f", "null", "-"], capture_output=True, text=True).stderr
+    starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", out)]
+    durs = [float(x) for x in re.findall(r"silence_duration: ([\d.]+)", out)]
+    gaps = [f"{max(a, 0):.1f}s+{d:.1f}" for a, d in zip(starts, durs) if a + d < total - 0.3]
+    return f"{total:.1f}s" + (f" gaps[{', '.join(gaps)}]" if gaps else "")
 
 
 def _to_wav(src, dst, input_args=()):
@@ -240,6 +251,7 @@ class Narrator:
                 self._edge(text, mp3)
                 _to_wav(mp3, wav)
             results.append((wav, probe_duration(wav)))
+            log(f"   🎙️ scene {i + 1}/{len(scenes)}: {len(text.split())} words -> {describe_audio(wav)}")
         return results
 
     def synthesize(self, scenes, workdir):

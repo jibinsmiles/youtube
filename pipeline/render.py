@@ -51,6 +51,34 @@ def pick_music():
     return random.choice(tracks) if tracks else None
 
 
+def _mix_chain(v, m, pad):
+    """Audio graph up to the final level: voice (input index v), optional ducked music (input m)."""
+    if m is None:
+        return f"[{v}:a]aresample=44100,{pad}[mix]"
+    return (f"[{v}:a]aresample=44100,{pad},asplit=2[vo][sc];"
+            f"[{m}:a]aresample=44100,volume=0.14,afade=t=in:d=1.5[m0];"
+            "[m0][sc]sidechaincompress=threshold=0.02:ratio=10:attack=15:release=300[m];"
+            "[vo][m]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[mix]")
+
+
+def _loudnorm_filter(audio_in, pad, has_music, workdir, target="I=-16:TP=-1.5:LRA=11"):
+    """loudnorm filter text using measured values (linear mode = one steady gain); single-pass if measuring fails."""
+    import json
+    import re
+    chain = _mix_chain(0, 1 if has_music else None, pad)
+    cmd = ["ffmpeg", "-hide_banner", "-nostats", *audio_in, "-filter_complex",
+           f"{chain};[mix]loudnorm={target}:print_format=json[o]", "-map", "[o]", "-f", "null", "-"]
+    try:
+        r = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, timeout=600)
+        data = json.loads(re.findall(r"\{[^{}]*\"input_i\"[^{}]*\}", r.stderr)[-1])
+        return (f"loudnorm={target}:measured_I={data['input_i']}:measured_TP={data['input_tp']}:"
+                f"measured_LRA={data['input_lra']}:measured_thresh={data['input_thresh']}:"
+                f"offset={data['target_offset']}:linear=true")
+    except Exception as e:
+        log(f"⚠️ Loudness pre-measure failed ({type(e).__name__}); using single-pass loudnorm")
+        return f"loudnorm={target}"
+
+
 def render_video(media, durations, voice_wavs, ass_path, width, height, out_path, workdir,
                  captions=True, music=None, tail=TAIL_SECONDS):
     """media: [(kind, path)], durations: [seconds], voice_wavs: [Path]. Returns out_path."""
@@ -69,21 +97,16 @@ def render_video(media, durations, voice_wavs, ass_path, width, height, out_path
     # 2) final pass: captions + audio mix + loudness
     total = sum(durations)          # durations already include the closing tail (added to the last shot)
     fade = min(0.9, max(tail - 0.2, 0.4))
-    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "scenes.txt",
-           "-i", "voice.wav"]
+    audio_in = ["-i", "voice.wav"] + (["-stream_loop", "-1", "-i", str(music)] if music else [])
+    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "scenes.txt"] + audio_in
     vfade = f"fade=t=out:st={total - fade:.3f}:d={fade:.3f}"
     vchain = (f"[0:v]ass={Path(ass_path).name},{vfade}[v]" if captions else f"[0:v]{vfade}[v]")
     afade = f"afade=t=out:st={total - fade:.3f}:d={fade:.3f}"
     pad = f"apad=pad_dur={tail:.3f}"
-    if music:
-        cmd += ["-stream_loop", "-1", "-i", str(music)]
-        achain = (f"[1:a]aresample=44100,{pad},asplit=2[vo][sc];"
-                  "[2:a]aresample=44100,volume=0.14,afade=t=in:d=1.5[m0];"
-                  "[m0][sc]sidechaincompress=threshold=0.02:ratio=10:attack=15:release=300[m];"
-                  "[vo][m]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[mix];"
-                  f"[mix]loudnorm=I=-16:TP=-1.5:LRA=11,{afade}[a]")
-    else:
-        achain = f"[1:a]aresample=44100,{pad},loudnorm=I=-16:TP=-1.5:LRA=11,{afade}[a]"
+    # Two-pass loudness: measure first, then apply one steady gain. Single-pass loudnorm adjusts gain on the fly and
+    # can start too quietly or squash words.
+    norm = _loudnorm_filter(audio_in, pad, bool(music), workdir)
+    achain = f"{_mix_chain(1, 2 if music else None, pad)};[mix]{norm},{afade}[a]"
     cmd += ["-filter_complex", f"{vchain};{achain}", "-map", "[v]", "-map", "[a]",
             "-t", f"{total:.3f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
             "-pix_fmt", "yuv420p", "-r", str(FPS), "-c:a", "aac", "-ac", "2", "-b:a", "192k",
