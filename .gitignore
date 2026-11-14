@@ -3,3 +3,4 @@ out/
 work/
 *.mp4
 .env
+models/

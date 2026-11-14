@@ -97,11 +97,14 @@ voice:
   # Tried in this order for the whole video; a failure (quota, outage) falls through to the next provider.
   # elevenlabs only counts if ELEVENLABS_API_KEY and elevenlabs.voice_id are set. edge is the free last resort.
   providers: ["elevenlabs", "gemini", "edge"]
-  # Free-tier friendly: Shorts (about 7 voice calls) use the natural Gemini voice; long videos (about 35 calls, which
-  # the free quota cannot cover) use the free Edge voice. Remove this block if you ever enable billing.
+  # Free: Kokoro runs on the server itself (no quota). Gemini is only a backup for Shorts, Edge the last resort.
   providers_by_kind:
-    short: ["elevenlabs", "gemini", "edge"]
-    long: ["edge"]
+    short: ["kokoro", "gemini", "edge"]
+    long: ["kokoro", "edge"]
+  kokoro:                      # free, runs on the server, no quota. Voices: am_michael, am_adam, am_eric (male), af_heart, af_bella, af_nicole (female), bm_george, bf_emma (British)
+    voice: "am_michael"
+    speed: 1.0
+    lang: "en-us"
   gemini:
     models: ["gemini-3.8-flash-tts", "gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"]
     voice: "Charon"            # Informative. Other good picks: Sadaltager (knowledgeable), Achird (friendly), Sulafat (warm), Iapetus (clear)

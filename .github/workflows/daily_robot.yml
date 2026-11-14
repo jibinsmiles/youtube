@@ -69,6 +69,12 @@ jobs:
       - name: Python packages
         run: pip install -r requirements.txt
 
+      - name: Cache the free Kokoro voice model
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: kokoro-v1.0
+
       - name: Run pipeline (${{ matrix.channel }})
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

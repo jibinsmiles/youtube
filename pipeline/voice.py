@@ -5,6 +5,7 @@ part-way (quota, outage) the video is re-voiced from scratch with the next provi
 mixes two different voices.
 
   elevenlabs  paid, very natural            (needs ELEVENLABS_API_KEY + elevenlabs.voice_id)
+  kokoro      free, runs on the server itself (no quota, no limits), natural open-source voice
   gemini      natural, uses GEMINI_API_KEY  (Gemini speech models)
   edge        free Microsoft voices, last-resort fallback (always available, sounds the most synthetic)
 """
@@ -17,8 +18,13 @@ from pathlib import Path
 
 import requests
 
-from .config import env, log
+from .config import ROOT, env, log
 
+KOKORO_FILES = {
+    "kokoro-v1.0.onnx": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx",
+    "voices-v1.0.bin": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin",
+}
+_kokoro_cache = {}
 PAD_SECONDS = 0.18   # breathing room added after every scene
 GEMINI_API = "https://generativelanguage.googleapis.com/v1beta"
 
@@ -100,6 +106,12 @@ class Narrator:
                 continue
             if p == "gemini" and not env("GEMINI_API_KEY"):
                 continue
+            if p == "kokoro":
+                try:
+                    import kokoro_onnx  # noqa: F401
+                except Exception:
+                    log("ℹ️ kokoro-onnx is not installed; skipping the free Kokoro voice")
+                    continue
             if p not in usable:
                 usable.append(p)
         if "edge" not in usable:
@@ -127,6 +139,45 @@ class Narrator:
                     last = e
                     time.sleep(1.5 * (attempt + 1))
         raise RuntimeError(f"edge-tts failed for every voice: {last}")
+
+    # -- kokoro (free, local) ------------------------------------------------
+    @staticmethod
+    def _kokoro_model():
+        """Load the Kokoro model once (downloads ~330 MB of model files on first use; the workflow caches them)."""
+        if "model" not in _kokoro_cache:
+            from kokoro_onnx import Kokoro
+            folder = ROOT / "models"
+            folder.mkdir(exist_ok=True)
+            for name, url in KOKORO_FILES.items():
+                path = folder / name
+                if not path.exists() or path.stat().st_size < 1_000_000:
+                    log(f"⬇️ Downloading Kokoro model file {name} (first run only)")
+                    with requests.get(url, stream=True, timeout=300, allow_redirects=True) as r:
+                        r.raise_for_status()
+                        with open(path, "wb") as fh:
+                            for chunk in r.iter_content(1 << 20):
+                                fh.write(chunk)
+            _kokoro_cache["model"] = Kokoro(str(folder / "kokoro-v1.0.onnx"), str(folder / "voices-v1.0.bin"))
+        return _kokoro_cache["model"]
+
+    def _kokoro(self, text, out_wav, workdir):
+        import wave
+
+        import numpy as np
+        k = self.cfg["voice"].get("kokoro", {})
+        samples, rate = self._kokoro_model().create(text, voice=k.get("voice", "am_michael"),
+                                                    speed=float(k.get("speed", 1.0)), lang=k.get("lang", "en-us"))
+        pcm = (np.clip(np.asarray(samples, dtype="float32"), -1, 1) * 32767).astype("<i2")
+        raw = Path(workdir) / "kokoro_raw.wav"
+        with wave.open(str(raw), "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(int(rate))
+            w.writeframes(pcm.tobytes())
+        _to_wav(raw, out_wav)
+        total, speech, gap = analyze_speech(out_wav)
+        if speech < max(0.4, len(text.split()) / 6.5):
+            raise RuntimeError(f"kokoro produced almost no speech ({speech:.1f}s for {len(text.split())} words)")
 
     # -- elevenlabs ----------------------------------------------------------
     def _elevenlabs(self, text, out_mp3, prev_text="", next_text=""):
@@ -240,7 +291,9 @@ class Narrator:
         for i, scene in enumerate(scenes):
             text = normalize_for_speech(scene["narration"])
             mp3, wav = workdir / f"voice_{i:03d}.mp3", workdir / f"voice_{i:03d}.wav"
-            if provider == "gemini":
+            if provider == "kokoro":
+                self._kokoro(text, wav, workdir)
+            elif provider == "gemini":
                 self._gemini(text, wav, workdir)
             elif provider == "elevenlabs":
                 prev_t = scenes[i - 1]["narration"] if i else ""
@@ -272,7 +325,7 @@ class Narrator:
                     f.unlink(missing_ok=True)
                 continue
             self.used = provider
-            detail = {"edge": self.voice, "gemini": f"{self._gem_model}/{self.cfg['voice'].get('gemini', {}).get('voice')}"
+            detail = {"edge": self.voice, "kokoro": self.cfg["voice"].get("kokoro", {}).get("voice", "am_michael"), "gemini": f"{self._gem_model}/{self.cfg['voice'].get('gemini', {}).get('voice')}"
                       }.get(provider, provider)
             log(f"🎙️ Voiced {len(scenes)} scenes ({sum(d for _, d in results):.0f}s) using {provider} [{detail}]")
             return results
