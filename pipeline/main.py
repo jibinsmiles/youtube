@@ -3,6 +3,7 @@
     python -m pipeline.main --channel technology [--kind auto|short|long] [--dry-run]
 """
 import argparse
+import os
 import shutil
 import sys
 import time
@@ -96,7 +97,10 @@ def main(argv=None):
 
     counts = state.counts_today(cfg["id"], tz)
     log(f"📊 Today so far: {counts['short']} shorts, {counts['long']} long")
-    if not forced and not args.dry_run:
+    manual = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+    if manual:
+        log("🖐️ Manual run — skipping the active-hours and minimum-gap checks (daily caps still apply).")
+    if not forced and not manual and not args.dry_run:
         hour = datetime.now(tz).hour
         if not (sch["active_hours"][0] <= hour < sch["active_hours"][1]):
             log("🌙 Outside active hours — nothing to do.")
