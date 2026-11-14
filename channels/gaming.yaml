@@ -1,0 +1,43 @@
+# Game Pulse Daily — inherits everything from technology.yaml and overrides the niche-specific parts.
+# To switch it on: add its YouTube secrets (see README "Adding a channel") and set enabled: true.
+extends: technology
+id: gaming
+name: "Game Pulse Daily"
+enabled: false
+niche: "Video game news, releases and industry stories"
+audience: "Gamers aged 16-35 who want fast, accurate news on releases, updates, delays and industry moves"
+timezone: America/New_York
+
+style:
+  persona: "A witty gaming journalist who gets to the point fast and treats gamers like adults."
+  rules:
+    - "Open with the single most surprising or consequential fact, not with context."
+    - "Prefer concrete details (what exactly changed, who is affected) over adjectives."
+    - "Always include at least one piece of original analysis: what this means, who wins or loses, or what is being overlooked."
+    - "If a number, price or date is not in the sources, leave it out. Never guess."
+    - "Keep a calm, credible tone. No hype, no fear-mongering, no insulting any company or person."
+    - "End with one specific question that invites comments. Do not beg for likes or subscribes."
+    - "Write the way people actually talk: use contractions, mix very short sentences with longer ones, and avoid stacked adjectives or formal connectors."
+    - "Separate confirmed facts from rumours and leaks; call a rumour a rumour."
+
+sources:
+  feeds:
+    - {name: "Eurogamer", url: "https://www.eurogamer.net/feed"}
+    - {name: "Polygon", url: "https://www.polygon.com/rss/index.xml"}
+    - {name: "GameSpot", url: "https://www.gamespot.com/feeds/news/"}
+    - {name: "IGN", url: "https://feeds.feedburner.com/ign/all"}
+    - {name: "PC Gamer", url: "https://www.pcgamer.com/rss/"}
+
+voice:
+  gemini:
+    voice: "Puck"
+    style: "Upbeat, quick and conversational, like a gamer friend sharing big news. Natural pace, small pauses, never a news-reader voice."
+  voices: ["en-US-AndrewMultilingualNeural", "en-US-AriaNeural", "en-US-GuyNeural"]
+  rate: "+3%"
+
+visuals:
+  fallback_queries: ['gaming controller', 'esports arena', 'person playing video games', 'neon lights']
+
+publish:
+  category_id: "20"
+  hashtags: ['#Gaming', '#GameNews']

@@ -2,12 +2,14 @@ name: Daily video robot
 
 on:
   schedule:
-    # 07:00, 10:00, 13:00, 16:00, 19:00, 22:00 India time (UTC+5:30).
-    # Each run makes at most ONE video, and only if a strong story is available
-    # and today's targets/min-gap allow it (see channels/technology.yaml).
-    - cron: "30 1,4,7,10,13,16 * * *"
+    # Every 2 hours. Each enabled channel makes at most ONE video per run, and only if a strong story is
+    # available and its own active hours / daily targets / minimum gap allow it (see channels/<id>.yaml).
+    - cron: "30 */2 * * *"
   workflow_dispatch:
     inputs:
+      channel:
+        description: "all (every enabled channel) or one channel id, e.g. technology"
+        default: "all"
       kind:
         description: "auto | short | long"
         default: "auto"
@@ -18,16 +20,36 @@ on:
         default: public
 
 permissions:
-  contents: write            # lets the job commit data/state.json back to the repo
-
-concurrency:
-  group: video-robot
-  cancel-in-progress: false
+  contents: write            # lets each job commit its data/state_<channel>.json back to the repo
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      channels: ${{ steps.list.outputs.channels }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - id: list
+        env:
+          INPUT_CHANNEL: ${{ github.event.inputs.channel }}
+        run: echo "channels=$(python scripts/list_channels.py "${INPUT_CHANNEL:-all}")" >> "$GITHUB_OUTPUT"
+
   run:
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false                 # one channel failing never stops the others
+      max-parallel: 20
+      matrix:
+        channel: ${{ fromJSON(needs.prepare.outputs.channels) }}
+    concurrency:
+      group: video-robot-${{ matrix.channel }}      # never two runs for the same channel at once
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
 
@@ -44,31 +66,35 @@ jobs:
       - name: Python packages
         run: pip install -r requirements.txt
 
-      - name: Run pipeline
+      - name: Run pipeline (${{ matrix.channel }})
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
-          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          # Per-channel secrets (YOUTUBE_*_<CHANNEL>) are read from this blob, so no edits are needed per channel.
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+          CHANNEL: ${{ matrix.channel }}
           INPUT_KIND: ${{ github.event.inputs.kind }}
           INPUT_VISIBILITY: ${{ github.event.inputs.visibility }}
         run: |
           KIND="${INPUT_KIND:-auto}"
-          python -m pipeline.main --channel technology --kind "$KIND" --visibility "${INPUT_VISIBILITY:-public}"
+          python -m pipeline.main --channel "$CHANNEL" --kind "$KIND" --visibility "${INPUT_VISIBILITY:-public}"
 
-      - name: Save state (what we already covered)
+      - name: Save state (what this channel already covered)
         if: always()
+        env:
+          CHANNEL: ${{ matrix.channel }}
         run: |
           git config user.name  "video-robot"
           git config user.email "video-robot@users.noreply.github.com"
-          git add data/state.json
+          git add "data/state_${CHANNEL}.json" || true
           if ! git diff --cached --quiet; then
-            git commit -m "chore: update state [skip ci]"
-            git pull --rebase origin "${GITHUB_REF_NAME}" || true
-            git push || true
+            git commit -m "chore: update ${CHANNEL} state [skip ci]"
+            for i in 1 2 3 4 5 6; do
+              git pull --rebase origin "${GITHUB_REF_NAME}" && git push && break
+              sleep $((RANDOM % 8 + 3))
+            done
           fi

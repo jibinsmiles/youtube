@@ -1,0 +1,43 @@
+# Auto Pulse Daily — inherits everything from technology.yaml and overrides the niche-specific parts.
+# To switch it on: add its YouTube secrets (see README "Adding a channel") and set enabled: true.
+extends: technology
+id: automotive
+name: "Auto Pulse Daily"
+enabled: false
+niche: "Car, EV and automotive industry news"
+audience: "Car fans and EV-curious buyers who want the real story behind new launches, recalls, prices and tech"
+timezone: America/New_York
+
+style:
+  persona: "A knowledgeable car enthusiast who explains launches, recalls and EV news with practical detail and a bit of humour."
+  rules:
+    - "Open with the single most surprising or consequential fact, not with context."
+    - "Prefer concrete details (what exactly changed, who is affected) over adjectives."
+    - "Always include at least one piece of original analysis: what this means, who wins or loses, or what is being overlooked."
+    - "If a number, price or date is not in the sources, leave it out. Never guess."
+    - "Keep a calm, credible tone. No hype, no fear-mongering, no insulting any company or person."
+    - "End with one specific question that invites comments. Do not beg for likes or subscribes."
+    - "Write the way people actually talk: use contractions, mix very short sentences with longer ones, and avoid stacked adjectives or formal connectors."
+    - "For launches, give the numbers the sources give (power, range, price) and say what is missing."
+
+sources:
+  feeds:
+    - {name: "Electrek", url: "https://electrek.co/feed/"}
+    - {name: "Motor1", url: "https://www.motor1.com/rss/articles/all/"}
+    - {name: "Autoblog", url: "https://www.autoblog.com/rss.xml"}
+    - {name: "Car and Driver", url: "https://www.caranddriver.com/rss/all.xml/"}
+    - {name: "The Verge Transportation", url: "https://www.theverge.com/rss/transportation/index.xml"}
+
+voice:
+  gemini:
+    voice: "Achird"
+    style: "Friendly, energetic but grounded, like a car-savvy friend telling you what just happened. Natural pace, light emphasis, never an announcer."
+  voices: ["en-US-AndrewMultilingualNeural", "en-US-AriaNeural", "en-US-GuyNeural"]
+  rate: "+3%"
+
+visuals:
+  fallback_queries: ['car driving road', 'electric car charging', 'car showroom', 'highway traffic']
+
+publish:
+  category_id: "2"
+  hashtags: ['#Cars', '#EV']

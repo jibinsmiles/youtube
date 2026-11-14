@@ -114,7 +114,7 @@ def main(argv=None):
         log("🔒 Private test run — the video is uploaded as PRIVATE and is not recorded in state, so its topic "
             "stays available for a real run.")
     tz = ZoneInfo(cfg["timezone"])
-    state = State.load()
+    state = State.load(cfg["id"])
     forced = None if args.kind == "auto" else args.kind
     sch = cfg["schedule"]
     log(f"⚡ {cfg['name']} — run at {datetime.now(tz):%Y-%m-%d %H:%M %Z}")
@@ -196,7 +196,7 @@ def main(argv=None):
                 with open(summary, "a", encoding="utf-8") as fh:
                     fh.write(f"### 🎬 {script['title']}\n\n- **Status:** {label}\n- **Watch:** {watch}\n"
                              f"- **Studio:** {studio}\n- **Type:** {kind}\n")
-            telegram(f"🎬 New {kind}: {script['title']}\n{label}\nWatch: {watch}\nStudio: {studio}")
+            telegram(f"🎬 [{cfg['name']}] New {kind}: {script['title']}\n{label}\nWatch: {watch}\nStudio: {studio}")
             return 0
 
     log("🛑 No story passed the quality bar this run. Nothing published (by design).")

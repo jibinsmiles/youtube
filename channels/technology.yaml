@@ -7,6 +7,7 @@ name: Trend Pulse Daily
 niche: "Technology news and explainers with an India angle"
 audience: "Curious Indian tech enthusiasts, students and working professionals (18-40) who want to know what a tech story actually means for them"
 timezone: Asia/Kolkata
+enabled: true                   # set false to pause this channel (the workflow skips it)
 
 style:
   persona: "A sharp, friendly tech analyst who explains things like a smart friend: clear, specific, a little dry humour, never hypey."
@@ -41,14 +42,14 @@ style:
     - "smash that"
 
 schedule:
-  shorts_per_day: 3
-  long_per_day: 1
-  max_long_per_day: 2          # a 2nd long video only for an exceptional story
-  min_gap_minutes: 120         # spread uploads through the day
+  shorts_per_day: 4
+  long_per_day: 3
+  max_long_per_day: 3
+  min_gap_minutes: 100         # spread uploads through the day
   active_hours: [7, 23]        # local time window in which runs may publish
   short_min_score: 6           # story must score at least this (1-10) to be used
   long_min_score: 7
-  extra_long_min_score: 9
+  extra_long_min_score: 9      # only used if max_long_per_day > long_per_day
 
 formats:
   short:

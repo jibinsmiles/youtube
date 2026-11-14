@@ -9,7 +9,7 @@ source text, the script fails the quality checks, or the fact-check finds unsupp
 the run publishes nothing.
 
 ## How a run works
-1. Pull stories from the feeds in `channels/technology.yaml` (last 36 h), measure how many outlets cover each.
+1. Pull stories from the feeds in `channels/<id>.yaml` (last 36 h), measure how many outlets cover each.
 2. Gemini ranks them (newsworthiness, India relevance, room for original analysis). Rumours/listicles score low.
 3. Fetch the full article text (long videos also pull 2-3 related articles).
 4. Write the script from the sources only → reject if too short/long, filler phrases, greeting opener.
@@ -61,16 +61,36 @@ accepted, and key numbers/names pop up as on-screen callouts (only text that is 
 
 Local offline check (no API keys): `python scripts/smoke_test.py`
 
-## Tuning (all in `channels/technology.yaml`)
+## Tuning (per channel, in `channels/<id>.yaml`)
 - `schedule` — videos per day, minimum gap, active hours, minimum story scores.
 - `style` — persona, rules, banned phrases. Most of the "feel" of the channel lives here.
 - `sources.feeds` — add/remove feeds. Dead feeds are skipped automatically.
 - `formats.*.target` — script lengths.
 
-## Adding another channel later
-Copy `channels/technology.yaml` to `channels/<name>.yaml`, change niche / sources / style / voice, add a
-`YOUTUBE_REFRESH_TOKEN_<NAME>` secret (same client id/secret works), and add a workflow step with
-`--channel <name>`. Start with one channel and add more only when its videos earn real views.
+## Running many channels
+Every file in `channels/` is a channel. `science`, `automotive` and `gaming` are ready but switched off;
+they inherit everything from `technology.yaml` (`extends:`) and only override niche, sources, voice and style.
+The workflow runs every 2 hours and runs **all enabled channels in parallel**; each channel makes at most one
+video per run and keeps its own targets (`schedule:` - currently 4 shorts + 3 long per day), active hours and
+state file (`data/state_<channel>.json`).
+
+**To add / switch on a channel**
+1. Create the YouTube channel (needs its own Google sign-in or brand account - a human step).
+2. `python scripts/get_refresh_token.py <CLIENT_ID> <CLIENT_SECRET>` and sign in as that channel's owner.
+3. Add repo secrets `YOUTUBE_REFRESH_TOKEN_<CHANNEL>` (e.g. `..._SCIENCE`). If it should use a different Google
+   Cloud project, also `YOUTUBE_CLIENT_ID_<CHANNEL>` and `YOUTUBE_CLIENT_SECRET_<CHANNEL>`.
+4. Set `enabled: true` in `channels/<id>.yaml`, then run the workflow once with `channel=<id>`,
+   `visibility=private` to test it.
+New niche = copy `channels/science.yaml`, change the id/name/feeds/voice/style.
+
+**Limits to plan for at 7 videos/day/channel**
+- **YouTube uploads:** about 100 per day per Google Cloud project. Use one project per ~10 channels
+  (one OAuth client each) and set the per-channel client secrets above.
+- **Gemini quota:** each video needs a text call or several plus one voice call per scene (a long video is
+  30-40 scenes). The free tier will not cover many channels; use a paid key, or the voice falls back to the free
+  Edge voices (less natural).
+- **Quality over volume:** YouTube treats mass-produced, repetitive channels as "inauthentic content" and can
+  refuse monetization. Start with 1-3 channels, watch what earns views, then add more.
 
 ## Things that will bite you
 - **Gemini model names.** Models get shut down. The client auto-discovers working models if the defaults

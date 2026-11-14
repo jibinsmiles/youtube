@@ -6,7 +6,6 @@ from pathlib import Path
 
 from .config import ROOT
 
-STATE_PATH = ROOT / "data" / "state.json"
 _STOP = set("the a an and or of to in on for with from by at as is are was were be been this that these "
             "those it its into over after before about new will can could may might says say said how why "
             "what who when where which has have had not more less than just your you our their they them "
@@ -27,25 +26,28 @@ def _now():
 
 
 class State:
-    def __init__(self, data):
+    def __init__(self, data, path=None):
+        self.path = Path(path) if path else ROOT / "data" / "state.json"
         self.data = data
         self.data.setdefault("stories", [])
         self.data.setdefault("uploads", [])
         self.data.setdefault("pexels_used", [])
 
     @classmethod
-    def load(cls):
+    def load(cls, channel_id="technology"):
+        """Each channel keeps its own file (data/state_<channel>.json) so channels never block each other."""
+        path = ROOT / "data" / f"state_{channel_id}.json"
         try:
-            return cls(json.loads(Path(STATE_PATH).read_text(encoding="utf-8")) or {})
+            return cls(json.loads(path.read_text(encoding="utf-8")) or {}, path)
         except (FileNotFoundError, json.JSONDecodeError):
-            return cls({})
+            return cls({}, path)
 
     def save(self):
         self.data["stories"] = self.data["stories"][-500:]
         self.data["uploads"] = self.data["uploads"][-1000:]
         self.data["pexels_used"] = self.data["pexels_used"][-400:]
-        STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        STATE_PATH.write_text(json.dumps(self.data, indent=1, ensure_ascii=False), encoding="utf-8")
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(json.dumps(self.data, indent=1, ensure_ascii=False), encoding="utf-8")
 
     # -- stories -----------------------------------------------------------
     def story_kinds(self, story_id, title):
