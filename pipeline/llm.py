@@ -74,9 +74,10 @@ class Gemini:
         return json.loads(text[start:end + 1])
 
     # -- public API --------------------------------------------------------
-    def generate(self, prompt, json_mode=True, temperature=0.7, max_tokens=8192):
+    def generate(self, prompt, json_mode=True, temperature=0.7, max_tokens=8192, parts=None):
+        """`parts` (optional) replaces the plain prompt with a list of {"text": ...} / {"inline_data": ...} parts."""
         payload = {
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "contents": [{"role": "user", "parts": parts or [{"text": prompt}]}],
             "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
         }
         if json_mode:

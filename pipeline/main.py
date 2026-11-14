@@ -39,7 +39,7 @@ def candidate_kinds(cfg, counts, score, forced):
     return kinds
 
 
-def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
+def produce(cfg, kind, story, dossier, script, state, workdir, out_dir, llm=None):
     """Voice -> visuals -> captions -> render. Returns (video_path, thumbnail_or_None)."""
     fmt = cfg["formats"][kind]
     width, height, portrait = fmt["width"], fmt["height"], kind == "short"
@@ -51,14 +51,15 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
 
     # Each scene is cut into several shots (about one every 2.5-5 s), each with its own on-topic footage query.
     vis = Visuals(cfg, state.data["pexels_used"])
-    shot_media, shot_secs, n = [], [], 0
+    shots, shot_secs = [], []
     for s, d in zip(scenes, durations):
         queries = s.get("shots") or [s.get("visual_query", "technology")]
         count = max(1, min(len(queries), int(d // 2.5)))
         for q in queries[:count]:
-            shot_media.append(vis.fetch(q, portrait, workdir, n, width, height))
+            shots.append((q, s["narration"]))
             shot_secs.append(d / count)
-            n += 1
+    n = len(shots)
+    shot_media = vis.fetch_all(llm, shots, portrait, workdir, width, height)
     shot_secs[-1] += TAIL_SECONDS            # closing beat: last picture lingers and fades out
     shot_secs = snap_to_frames(shot_secs)
     state.data["pexels_used"].extend(vis.new_ids)
@@ -212,7 +213,7 @@ def _main(argv=None):
             workdir = Path(ROOT / "work" / f"{kind}_{int(time.time())}")
             workdir.mkdir(parents=True, exist_ok=True)
             try:
-                video, thumb = produce(cfg, kind, story, dossier, script, state, workdir, ROOT / "out")
+                video, thumb = produce(cfg, kind, story, dossier, script, state, workdir, ROOT / "out", llm)
             finally:
                 shutil.rmtree(workdir, ignore_errors=True)
 

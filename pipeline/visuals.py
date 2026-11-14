@@ -3,6 +3,9 @@
 Set PIXABAY_API_KEY and/or PEXELS_API_KEY. Providers are tried in the order given by
 `visuals.providers` in the channel YAML, skipping any whose key is not set.
 """
+import base64
+import io
+import json
 import random
 import re
 import time
@@ -173,6 +176,143 @@ class Visuals:
         self._download(hit["largeImageURL"], dest)
         self._mark(f"q{hit['id']}")
         return True
+
+    # -- vision-checked selection -----------------------------------------
+    def _candidates(self, query, portrait, n_video=3):
+        """On-topic-ish options for one shot WITHOUT downloading: [{'kind','id','url','thumb','tags'}]."""
+        out, seen = [], set()
+        words = query.split()
+        for q in [query] + ([" ".join(words[:2])] if len(words) > 2 else []):
+            try:
+                data = self._pixabay_get("/videos/", {"q": q, "per_page": 30, "safesearch": "true"})
+            except Exception as e:
+                log(f"⚠️ pixabay video search failed for '{q}': {e}")
+                continue
+            vids = []
+            for hit in data.get("hits", []):
+                if f"x{hit['id']}" in self.used or hit["id"] in seen or hit.get("duration", 0) < 4:
+                    continue
+                for size in ("large", "medium"):
+                    v = (hit.get("videos") or {}).get(size) or {}
+                    w, h = v.get("width") or 0, v.get("height") or 0
+                    if v.get("url") and 1280 <= max(w, h) <= 2600 and v.get("thumbnail"):
+                        fits = (h > w) if portrait else (w >= h)
+                        if portrait or fits:
+                            vids.append(((0 if fits else 1), -self._relevance(q, hit), hit["id"], v, hit))
+                        break
+            vids.sort(key=lambda t: (t[0], t[1]))
+            for _, _, vid, v, hit in vids[:n_video]:
+                if vid not in seen:
+                    seen.add(vid)
+                    out.append({"kind": "video", "id": f"x{vid}", "url": v["url"], "thumb": v["thumbnail"],
+                                "tags": hit.get("tags", "")})
+            if len(out) >= n_video:
+                break
+        try:
+            params = {"q": query, "image_type": "photo", "per_page": 20, "safesearch": "true",
+                      "orientation": "vertical" if portrait else "horizontal",
+                      "min_height" if portrait else "min_width": 1000}
+            hits = [h for h in self._pixabay_get("/", params).get("hits", [])
+                    if f"q{h['id']}" not in self.used and h.get("largeImageURL")]
+            hits.sort(key=lambda h: -self._relevance(query, h))
+            for h in hits[:1]:
+                out.append({"kind": "photo", "id": f"q{h['id']}", "url": h["largeImageURL"],
+                            "thumb": h.get("webformatURL") or h.get("previewURL"), "tags": h.get("tags", "")})
+        except Exception as e:
+            log(f"⚠️ pixabay photo search failed for '{query}': {e}")
+        return out
+
+    @staticmethod
+    def _thumb_part(url):
+        """Small JPEG of a preview image as a Gemini inline part (None if it cannot be fetched)."""
+        try:
+            r = requests.get(url, timeout=20)
+            r.raise_for_status()
+            im = Image.open(io.BytesIO(r.content)).convert("RGB")
+            im.thumbnail((320, 320))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=70)
+            return {"inline_data": {"mime_type": "image/jpeg", "data": base64.b64encode(buf.getvalue()).decode()}}
+        except Exception:
+            return None
+
+    def _judge(self, llm, shots, cands):
+        """One vision call per batch: for each shot, which option (A, B, ...) fits what is said, or None."""
+        parts = [{"text": (
+            "You pick stock footage for a YouTube video, like a documentary editor. For each SHOT you get the line "
+            "being spoken and a search idea, then several candidate pictures (A, B, C...). Choose the candidate that "
+            "most clearly shows what the narration is about (concrete, literal, relevant to the subject). Reject "
+            "pictures that are unrelated, generic filler, nature or random people that do not fit the topic, or that "
+            "contain readable text/logos of the wrong brand. If no candidate fits well, answer \"none\". It is much "
+            "better to answer none than to pick something irrelevant.\n")}]
+        index = {}
+        for i, ((query, narration), options) in enumerate(zip(shots, cands), 1):
+            shot_parts, labels = [], []
+            for opt in options:
+                part = self._thumb_part(opt["thumb"]) if opt.get("thumb") else None
+                if part:
+                    label = "ABCDEFGH"[len(labels)]
+                    labels.append((label, options.index(opt)))
+                    shot_parts += [{"text": f"SHOT {i} option {label}:"}, part]
+            if not labels:
+                continue
+            index[i] = dict(labels)
+            parts.append({"text": f"\nSHOT {i} — narration: \"{narration[:220]}\" | search idea: {query}"})
+            parts += shot_parts
+        parts.append({"text": 'Return JSON: {"picks": [{"shot": 1, "choice": "B"}, {"shot": 2, "choice": "none"}]}'})
+        try:
+            data = llm.generate("", json_mode=True, temperature=0.0, max_tokens=2048, parts=parts)
+        except Exception as e:
+            log(f"⚠️ Visual check unavailable ({type(e).__name__}: {str(e)[:120]}); using tag matching instead")
+            return {}
+        picks = {}
+        for p in data.get("picks", []):
+            try:
+                shot, choice = int(p["shot"]), str(p["choice"]).strip().upper()
+            except (KeyError, ValueError, TypeError):
+                continue
+            if shot in index and choice in index[shot]:
+                picks[shot] = index[shot][choice]
+        return picks
+
+    def fetch_all(self, llm, shots, portrait, workdir, width, height, batch=12):
+        """shots: [(search_query, narration)]. Returns [(kind, path)] in the same order. Footage is chosen by looking
+        at candidate thumbnails; shots with no good candidate fall back to the tag-matching search."""
+        workdir = Path(workdir)
+        results = [None] * len(shots)
+        if llm is not None and "pixabay" in self.providers:
+            cands = [self._candidates(q, portrait) for q, _ in shots]
+            accepted = rejected = 0
+            for start in range(0, len(shots), batch):
+                chunk = range(start, min(start + batch, len(shots)))
+                picks = self._judge(llm, [shots[i] for i in chunk], [cands[i] for i in chunk])
+                for local, i in enumerate(chunk, 1):
+                    choice = picks.get(local)
+                    if choice is None:
+                        rejected += 1
+                        continue
+                    opt = cands[i][choice]
+                    if opt["id"] in self.used:               # another shot already took this clip
+                        continue
+                    ext = "mp4" if opt["kind"] == "video" else "jpg"
+                    dest = workdir / f"media_{i:03d}.{ext}"
+                    try:
+                        self._download(opt["url"], dest)
+                    except Exception as e:
+                        log(f"⚠️ download failed for shot {i + 1}: {e}")
+                        continue
+                    self._mark(opt["id"])
+                    self.stats[opt["kind"]] += 1
+                    self.by_provider["pixabay"] = self.by_provider.get("pixabay", 0) + 1
+                    results[i] = (opt["kind"], dest)
+                    accepted += 1
+                    log(f"   🖼️ shot {i + 1}: '{shots[i][0]}' -> {opt['kind']} [{opt['tags'][:60]}]")
+            log(f"🔍 Visual check: {accepted}/{len(shots)} shots matched by looking at the footage, "
+                f"{rejected} had no good option and use the fallback search")
+        for i, (q, _) in enumerate(shots):
+            if results[i] is None:
+                results[i] = self.fetch(q, portrait, workdir, i, width, height)
+        return results
 
     # -- generated fallback ------------------------------------------------
     @staticmethod
