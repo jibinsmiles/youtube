@@ -2,7 +2,7 @@
 # To switch it on: add its YouTube secrets (see README "Adding a channel") and set enabled: true.
 extends: technology
 id: science
-name: "Science Pulse Daily"
+name: "Cosmic Bites"
 enabled: false
 niche: "Science and space news explained simply"
 audience: "Curious adults and students who love space, physics, biology and big discoveries, and want to know what a finding really shows"

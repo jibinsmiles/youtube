@@ -2,7 +2,7 @@
 # To switch it on: add its YouTube secrets (see README "Adding a channel") and set enabled: true.
 extends: technology
 id: automotive
-name: "Auto Pulse Daily"
+name: "Torque Talk"
 enabled: false
 niche: "Car, EV and automotive industry news"
 audience: "Car fans and EV-curious buyers who want the real story behind new launches, recalls, prices and tech"
