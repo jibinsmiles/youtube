@@ -7,6 +7,7 @@ from pathlib import Path
 from .config import ROOT, log
 
 FPS = 30
+TAIL_SECONDS = 1.5   # closing beat after the last word: picture and sound fade out instead of cutting off
 
 
 def run(cmd, cwd=None):
@@ -51,7 +52,7 @@ def pick_music():
 
 
 def render_video(media, durations, voice_wavs, ass_path, width, height, out_path, workdir,
-                 captions=True, music=None):
+                 captions=True, music=None, tail=TAIL_SECONDS):
     """media: [(kind, path)], durations: [seconds], voice_wavs: [Path]. Returns out_path."""
     workdir = Path(workdir)
 
@@ -66,19 +67,23 @@ def render_video(media, durations, voice_wavs, ass_path, width, height, out_path
          "-c", "copy", "voice.wav"], cwd=workdir)
 
     # 2) final pass: captions + audio mix + loudness
-    total = sum(durations)
+    total = sum(durations)          # durations already include the closing tail (added to the last shot)
+    fade = min(0.9, max(tail - 0.2, 0.4))
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "scenes.txt",
            "-i", "voice.wav"]
-    vchain = f"[0:v]ass={Path(ass_path).name}[v]" if captions else "[0:v]null[v]"
+    vfade = f"fade=t=out:st={total - fade:.3f}:d={fade:.3f}"
+    vchain = (f"[0:v]ass={Path(ass_path).name},{vfade}[v]" if captions else f"[0:v]{vfade}[v]")
+    afade = f"afade=t=out:st={total - fade:.3f}:d={fade:.3f}"
+    pad = f"apad=pad_dur={tail:.3f}"
     if music:
         cmd += ["-stream_loop", "-1", "-i", str(music)]
-        achain = ("[1:a]aresample=44100,asplit=2[vo][sc];"
+        achain = (f"[1:a]aresample=44100,{pad},asplit=2[vo][sc];"
                   "[2:a]aresample=44100,volume=0.14,afade=t=in:d=1.5[m0];"
                   "[m0][sc]sidechaincompress=threshold=0.02:ratio=10:attack=15:release=300[m];"
                   "[vo][m]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[mix];"
-                  "[mix]loudnorm=I=-16:TP=-1.5:LRA=11[a]")
+                  f"[mix]loudnorm=I=-16:TP=-1.5:LRA=11,{afade}[a]")
     else:
-        achain = "[1:a]aresample=44100,loudnorm=I=-16:TP=-1.5:LRA=11[a]"
+        achain = f"[1:a]aresample=44100,{pad},loudnorm=I=-16:TP=-1.5:LRA=11,{afade}[a]"
     cmd += ["-filter_complex", f"{vchain};{achain}", "-map", "[v]", "-map", "[a]",
             "-t", f"{total:.3f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
             "-pix_fmt", "yuv420p", "-r", str(FPS), "-c:a", "aac", "-ac", "2", "-b:a", "192k",

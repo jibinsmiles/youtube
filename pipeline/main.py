@@ -16,7 +16,7 @@ from .captions import build_ass, word_timings
 from .config import ROOT, load_channel, log
 from .llm import Gemini
 from .notify import telegram
-from .render import extract_frame, find_silences, measure_loudness, pick_music, render_video, snap_to_frames
+from .render import TAIL_SECONDS, extract_frame, find_silences, measure_loudness, pick_music, render_video, snap_to_frames
 from .state import State
 from .thumbnail import make_thumbnail
 from .visuals import Visuals
@@ -59,6 +59,7 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
             shot_media.append(vis.fetch(q, portrait, workdir, n, width, height))
             shot_secs.append(d / count)
             n += 1
+    shot_secs[-1] += TAIL_SECONDS            # closing beat: last picture lingers and fades out
     shot_secs = snap_to_frames(shot_secs)
     state.data["pexels_used"].extend(vis.new_ids)
     log(f"🖼️  Visuals: {n} shots across {len(scenes)} scenes — {vis.stats['video']} stock videos, "
