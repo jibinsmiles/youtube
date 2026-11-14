@@ -16,7 +16,7 @@ from .captions import build_ass, word_timings
 from .config import ROOT, load_channel, log
 from .llm import Gemini
 from .notify import telegram
-from .render import extract_frame, measure_loudness, pick_music, render_video, snap_to_frames
+from .render import extract_frame, find_silences, measure_loudness, pick_music, render_video, snap_to_frames
 from .state import State
 from .thumbnail import make_thumbnail
 from .visuals import Visuals
@@ -83,6 +83,12 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
     lufs, peak = measure_loudness(video)
     log(f"🔊 Audio loudness: {lufs} LUFS, peak {peak} dBFS (target about -16 LUFS) | "
         f"file {video.stat().st_size / 1e6:.0f} MB | total {time.time() - t0:.0f}s")
+    gaps = find_silences(video)
+    if gaps:
+        log("⚠️ Silent stretch(es) in the final audio (start s, length s): "
+            + ", ".join(f"{a:.1f}/{d:.1f}" for a, d in gaps))
+    else:
+        log("✅ No audio dropouts (no silence longer than 1s)")
     thumb = None
     if kind == "long":
         extract_frame(workdir / "scene_000.mp4", workdir / "frame.png")

@@ -79,7 +79,7 @@ Copy `channels/technology.yaml` to `channels/<name>.yaml`, change niche / source
   *In production*.
 - **API audit.** Uploads from an unaudited Google Cloud project can be forced to private. If videos stay
   private in `auto` mode, apply for the YouTube API compliance audit.
-- **Quota.** Default 10,000 units/day; an upload costs ~1,600. 4-5 uploads/day per project is fine;
+- **Quota.** Uploads have their own default limit of about 100 per day per project (other API calls share 10,000 units/day), so a handful of videos a day is fine;
   many channels need a quota extension.
 - **edge-tts** is a free but unofficial route to Microsoft's voices and can break. ElevenLabs is the
   stable upgrade.

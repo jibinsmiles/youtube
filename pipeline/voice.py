@@ -47,6 +47,8 @@ def probe_duration(path):
 # apply gentle compression for a more even, "broadcast" voice, then add a fixed breathing gap.
 _CLEAN = ("silenceremove=start_periods=1:start_duration=0:start_threshold=-50dB,"
           "areverse,silenceremove=start_periods=1:start_duration=0:start_threshold=-50dB,areverse,"
+          "silenceremove=stop_periods=-1:stop_duration=0.6:stop_threshold=-45dB:stop_silence=0.3,"   # squeeze long dead gaps inside a clip
+
           "highpass=f=70,acompressor=threshold=0.125:ratio=2.5:attack=8:release=120:makeup=1.5,"
           f"apad=pad_dur={PAD_SECONDS}")
 
@@ -54,6 +56,20 @@ _CLEAN = ("silenceremove=start_periods=1:start_duration=0:start_threshold=-50dB,
 def _to_wav(src, dst, input_args=()):
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *input_args, "-i", str(src), "-ar", "44100", "-ac", "1",
                     "-af", _CLEAN, str(dst)], check=True)
+
+
+def analyze_speech(path):
+    """Return (total_seconds, speech_seconds, longest_internal_silence) using ffmpeg silencedetect."""
+    total = probe_duration(path)
+    out = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-af",
+                          "silencedetect=n=-45dB:d=0.3", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", out)]
+    durs = [float(x) for x in re.findall(r"silence_duration: ([\d.]+)", out)]
+    silent = sum(durs)
+    # a trailing silence (our padding) is not an internal gap
+    internal = [d for st, d in zip(starts, durs) if st + d < total - 0.25]
+    return total, max(0.0, total - silent), max(internal, default=0.0)
 
 
 class _Quota(RuntimeError):
@@ -192,8 +208,14 @@ class Narrator:
                     tmp = Path(workdir) / "gem_raw.bin"
                     tmp.write_bytes(raw)
                     _to_wav(tmp, out_wav, in_args)
-                    if probe_duration(out_wav) < min_seconds:
+                    total, speech, gap = analyze_speech(out_wav)
+                    words = len(text.split())
+                    if total < min_seconds:
                         last = f"{model}: audio too short (truncated)"
+                        continue
+                    if speech < max(0.4, words / 5.5) or gap > 1.2:      # mostly silent / dropout inside the clip
+                        last = f"{model}: audio has a dropout (speech {speech:.1f}s of {total:.1f}s, gap {gap:.1f}s)"
+                        log(f"⚠️ {last}; regenerating this scene")
                         continue
                     self._gem_model, self._gem_shape = model, shape
                     return

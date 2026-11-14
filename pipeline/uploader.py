@@ -89,7 +89,7 @@ def upload_video(service, cfg, kind, video_path, script, sources, thumbnail=None
                 time.sleep(2 ** retries)
                 continue
             if "quotaExceeded" in str(e):
-                raise RuntimeError("YouTube API daily quota exceeded (default 10,000 units; one upload ≈ 1,600)")
+                raise RuntimeError("YouTube API daily quota exceeded (uploads default to about 100 per day per project)")
             raise
     video_id = response["id"]
     actual = (response.get("status") or {}).get("privacyStatus", privacy)

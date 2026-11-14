@@ -101,3 +101,13 @@ def measure_loudness(path):
     lufs = re.findall(r"I:\s+(-?[\d.]+) LUFS", r.stderr)
     peak = re.findall(r"Peak:\s+(-?[\d.]+) dBFS", r.stderr)
     return (float(lufs[-1]) if lufs else None, float(peak[-1]) if peak else None)
+
+
+def find_silences(path, min_dur=1.0, threshold="-45dB"):
+    """[(start, duration)] of silent stretches in the final audio, so a dropout shows up in the run log."""
+    import re
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-vn", "-af",
+                        f"silencedetect=n={threshold}:d={min_dur}", "-f", "null", "-"], capture_output=True, text=True)
+    starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", r.stderr)]
+    durs = [float(x) for x in re.findall(r"silence_duration: ([\d.]+)", r.stderr)]
+    return list(zip(starts, durs))
