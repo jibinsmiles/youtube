@@ -89,6 +89,8 @@ def upload_video(service, cfg, kind, video_path, script, sources, thumbnail=None
                 time.sleep(2 ** retries)
                 continue
             if "quotaExceeded" in str(e):
+                from .notify import alert
+                alert(cfg["name"], "YouTube upload quota exceeded", "Uploads default to about 100/day per Google Cloud project.")
                 raise RuntimeError("YouTube API daily quota exceeded (uploads default to about 100 per day per project)")
             raise
     video_id = response["id"]
@@ -97,6 +99,10 @@ def upload_video(service, cfg, kind, video_path, script, sources, thumbnail=None
         log(f"⚠️ Requested '{privacy}' but YouTube set the video to '{actual}'. If it stays private, the Google "
             "Cloud project has not passed YouTube's API compliance audit (uploads from unaudited projects are "
             "locked private) — apply for the audit at support.google.com/youtube/contact/yt_api_form")
+        from .notify import alert
+        alert(cfg["name"], f"video was set to '{actual}', not '{privacy}'",
+              f"YouTube changed the privacy of https://studio.youtube.com/video/{video_id}/edit. Unaudited API "
+              "projects can be forced private; apply for the YouTube API compliance audit.")
         privacy = actual
 
     if thumbnail and kind == "long":

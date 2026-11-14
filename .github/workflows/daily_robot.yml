@@ -2,9 +2,9 @@ name: Daily video robot
 
 on:
   schedule:
-    # Every 2 hours. Each enabled channel makes at most ONE video per run, and only if a strong story is
+    # Every hour. Each enabled channel makes at most ONE video per run, and only if a strong story is
     # available and its own active hours / daily targets / minimum gap allow it (see channels/<id>.yaml).
-    - cron: "30 */2 * * *"
+    - cron: "30 * * * *"
   workflow_dispatch:
     inputs:
       channel:
@@ -94,6 +94,9 @@ jobs:
           YOUTUBE_CLIENT_SECRET_GAMING: ${{ secrets.YOUTUBE_CLIENT_SECRET_GAMING }}
           YOUTUBE_REFRESH_TOKEN_GAMING: ${{ secrets.YOUTUBE_REFRESH_TOKEN_GAMING }}
           CHANNEL: ${{ matrix.channel }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
           INPUT_KIND: ${{ github.event.inputs.kind }}
           INPUT_MODE: ${{ github.event.inputs.mode }}
           INPUT_VISIBILITY: ${{ github.event.inputs.visibility }}

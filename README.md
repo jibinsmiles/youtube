@@ -67,10 +67,18 @@ Local offline check (no API keys): `python scripts/smoke_test.py`
 - `sources.feeds` — add/remove feeds. Dead feeds are skipped automatically.
 - `formats.*.target` — script lengths.
 
+## Alerts (email + Telegram)
+The robot emails you only when something needs attention: a crashed run, the natural voice falling back to the
+robotic one, a video YouTube did not make public, an audio dropout, or the upload quota running out. Each problem is
+sent once per run. Repo secrets: `ALERT_EMAIL_TO` (your address), `SMTP_USER` (a Gmail address to send from) and
+`SMTP_APP_PASSWORD` (a Gmail *app password*: Google Account > Security > 2-Step Verification > App passwords).
+Without them, alerts only appear in the run log. GitHub itself also emails you if a whole workflow run fails.
+Keep the address in secrets, not in the repo (this repo is public).
+
 ## Running many channels
 Every file in `channels/` is a channel. `science`, `automotive` and `gaming` are ready but switched off;
 they inherit everything from `technology.yaml` (`extends:`) and only override niche, sources, voice and style.
-The workflow runs every 2 hours and runs **all enabled channels in parallel**; each channel makes at most one
+The workflow runs every hour and runs **all enabled channels in parallel**; each channel makes at most one
 video per run and keeps its own targets (`schedule:` - currently 4 shorts + 3 long per day), active hours and
 state file (`data/state_<channel>.json`).
 

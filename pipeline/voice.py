@@ -250,6 +250,9 @@ class Narrator:
             except Exception as e:                       # includes _Quota
                 last_error = e
                 log(f"⚠️ Voice provider '{provider}' failed ({e}); trying the next one")
+                from .notify import alert
+                alert(self.cfg["name"], f"voice provider '{provider}' failed, falling back",
+                      f"{e}\nVideos may sound more robotic until this is fixed (quota/billing or an outage).")
                 for f in workdir.glob("voice_*"):
                     f.unlink(missing_ok=True)
                 continue

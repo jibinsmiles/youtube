@@ -15,7 +15,7 @@ from . import evergreen, news, research, scriptwriter
 from .captions import build_ass, word_timings
 from .config import ROOT, load_channel, log
 from .llm import Gemini
-from .notify import telegram
+from .notify import alert, telegram
 from .render import TAIL_SECONDS, extract_frame, find_silences, measure_loudness, pick_music, render_video, snap_to_frames
 from .state import State
 from .thumbnail import make_thumbnail
@@ -88,6 +88,8 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
     if gaps:
         log("⚠️ Silent stretch(es) in the final audio (start s, length s): "
             + ", ".join(f"{a:.1f}/{d:.1f}" for a, d in gaps))
+        alert(cfg["name"], "audio dropout in a finished video", f"Silent stretches (start s / length s): "
+              + ", ".join(f"{a:.1f}/{d:.1f}" for a, d in gaps) + f"\nFile: {video.name}")
     else:
         log("✅ No audio dropouts (no silence longer than 1s)")
     thumb = None
@@ -127,6 +129,17 @@ def _attempts(llm, cfg, state, counts, forced, mode):
 
 
 def main(argv=None):
+    try:
+        return _main(argv)
+    except SystemExit:
+        raise
+    except Exception as e:
+        import traceback
+        alert(os.environ.get('CHANNEL', 'pipeline'), f"run crashed: {type(e).__name__}", traceback.format_exc()[-1800:])
+        raise
+
+
+def _main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--channel", default="technology")
     ap.add_argument("--kind", default="auto", choices=["auto", "short", "long"])

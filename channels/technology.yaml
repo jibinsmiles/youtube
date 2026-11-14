@@ -42,10 +42,10 @@ style:
     - "smash that"
 
 schedule:
-  shorts_per_day: 4
+  shorts_per_day: 6
   long_per_day: 3
   max_long_per_day: 3
-  min_gap_minutes: 100         # spread uploads through the day
+  min_gap_minutes: 50          # spread uploads through the day
   active_hours: [7, 23]        # local time window in which runs may publish
   short_min_score: 6           # story must score at least this (1-10) to be used
   long_min_score: 7
