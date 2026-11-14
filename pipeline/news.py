@@ -25,6 +25,7 @@ class Story:
     age_hours: float = 0.0
     coverage: int = 0                      # how many OTHER outlets ran a similar story
     related: list = field(default_factory=list)
+    content: str = ""                      # full text from the feed itself (content:encoded), if provided
 
 
 def _clean(html):
@@ -59,10 +60,11 @@ def fetch_candidates(cfg, max_age_hours=36):
             age = (now - published).total_seconds() / 3600
             if age > max_age_hours or age < -1:
                 continue
+            content = _clean(" ".join(c.get("value", "") for c in (e.get("content") or [])))[:12000]
             stories.append(Story(
                 id=hashlib.sha1(url.encode()).hexdigest()[:12], title=title, url=url,
                 source=feed.get("name", "Unknown"), summary=_clean(e.get("summary", ""))[:600],
-                published=published, age_hours=max(age, 0)))
+                published=published, age_hours=max(age, 0), content=content))
 
     # de-duplicate identical URLs, then measure cross-outlet coverage
     unique = {s.url: s for s in stories}

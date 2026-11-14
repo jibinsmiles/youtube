@@ -14,7 +14,8 @@ style:
     - "Open with the single most surprising or consequential fact, not with context."
     - "Prefer concrete details (what exactly changed, who is affected) over adjectives."
     - "Always include at least one piece of original analysis: what this means, who wins or loses, or what is being overlooked."
-    - "If prices are not stated in the sources, do not guess them. Say Indian pricing has not been announced."
+    - "If prices or availability are not in the sources, do not guess and do not claim they are unannounced. Leave them out, or say the report does not mention them."
+    - "Add an India angle only when the sources support one; otherwise focus on the wider impact."
     - "Keep a calm, credible tone. No hype, no fear-mongering, no insulting any company or person."
     - "End with one specific question that invites comments. Do not beg for likes or subscribes."
   banned_phrases:

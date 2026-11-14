@@ -51,13 +51,14 @@ def _spec(kind, cfg):
     f = cfg["formats"][kind]
     if kind == "short":
         structure = ("HOOK (scene 1: a surprising concrete fact or question, max 12 words) -> what happened -> "
-                     "the one detail that matters -> what it means for the viewer in India -> a closing line that "
+                     "the one detail that matters -> what it means for viewers (an India angle ONLY if the sources "
+                     "support one, otherwise the wider impact) -> a closing line that "
                      "leaves one open question. Fast, no padding.")
     else:
         structure = ("COLD OPEN hook (1-2 scenes, the most surprising fact, no greeting) -> what happened -> "
                      "background viewers need -> how it works or what is actually new -> why it matters -> "
-                     "the India angle (pricing, availability, impact on Indian users or industry, only from the "
-                     "sources) -> the counter-argument or what could go wrong -> what to watch next -> one closing "
+                     "the India angle (ONLY if the sources provide one; if they do not, use this part for the wider "
+                     "impact on users or the industry instead) -> the counter-argument or what could go wrong -> what to watch next -> one closing "
                      "question for the comments.")
     return (f"Total narration: {f['target']} words. Each scene: {f['scene_words']} words. "
             f"Structure: {structure}")
@@ -82,6 +83,9 @@ RULES:
 {rules}
 - Use ONLY facts found in the SOURCE MATERIAL below. Never invent numbers, prices, dates, quotes or specs.
   If something is unknown or not announced, say so plainly.
+- Never say that something "has not been announced", "is not available" or "is unknown" unless the sources
+  say exactly that. If the sources are silent on something (for example India pricing or availability), leave it
+  out, or say "the report doesn't mention ...". Do not fill gaps with statements about what is or isn't known.
 - Attribute important claims ("according to The Verge", "the company says").
 - Clearly separate fact from your own analysis ("my read is...", "here's what this likely means").
 - Never use these phrases: {banned}
@@ -164,6 +168,9 @@ NARRATION TO CHECK:
 List every FACTUAL claim in the narration (numbers, dates, prices, names, quotes, specs, causal claims)
 that is NOT supported by the source material. Claims clearly framed as the narrator's opinion or analysis
 ("my read", "this likely means") are fine. Be precise and do not nitpick wording.
+A statement about what the source material itself does or does not mention (for example "the report doesn't
+say when it reaches India") is acceptable if it is true. A claim that something has NOT been announced, is
+unavailable or does not exist, when the sources are silent on it, IS unsupported.
 
 Return JSON: {{"unsupported": [{{"claim": "...", "reason": "..."}}]}}  (empty list if everything is supported)"""
     data = llm.json(prompt, temperature=0.0, max_tokens=2048)
@@ -178,8 +185,9 @@ def repair_script(llm, script, unsupported):
 A fact-checker found these claims are NOT supported by the sources:
 {issues}
 
-Rewrite the script so each of these claims is removed or softened to what the sources actually support
-(or marked clearly as unknown). Keep the same structure, tone, JSON format and about the same length.
+Rewrite the script so each of these claims is removed or softened to what the sources actually support.
+Prefer deleting the claim over replacing it with another statement about availability, pricing or plans,
+and do not add any new factual claims. Keep the same structure, tone, JSON format and about the same length.
 Return the full corrected JSON only."""
     return llm.json(prompt, temperature=0.3, max_tokens=16000)
 
