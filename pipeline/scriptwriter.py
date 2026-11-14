@@ -157,15 +157,22 @@ def write_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
 def fact_check(llm, script, dossier):
     """Return a list of unsupported claims (empty = verified)."""
     narration = "\n".join(s["narration"] for s in script["scenes"])
+    packaging = (f"VIDEO TITLE: {script.get('title', '')}\n"
+                 f"THUMBNAIL TEXT: {script.get('thumbnail_text', '')}\n"
+                 f"DESCRIPTION: {script.get('description', '')}")
     prompt = f"""You are a strict fact-checker for a news channel.
 
 SOURCE MATERIAL:
 {dossier['text']}
 
+TITLE, THUMBNAIL AND DESCRIPTION TO CHECK (a headline must not state or imply more than the sources support,
+including any number, amount, name or cause it contains):
+{packaging}
+
 NARRATION TO CHECK:
 {narration}
 
-List every FACTUAL claim in the narration (numbers, dates, prices, names, quotes, specs, causal claims)
+List every FACTUAL claim in the title, thumbnail text, description and narration (numbers, dates, prices, names, quotes, specs, causal claims)
 that is NOT supported by the source material. Claims clearly framed as the narrator's opinion or analysis
 ("my read", "this likely means") are fine. Be precise and do not nitpick wording.
 Questions put to the audience (for example a closing question inviting comments) are not factual claims; ignore them.
