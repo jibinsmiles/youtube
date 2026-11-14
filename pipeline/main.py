@@ -164,8 +164,16 @@ def main(argv=None):
             label = {"private": "PRIVATE — needs your approval", "public": "LIVE"}.get(privacy, privacy.upper())
             if publish_at:
                 label = f"PRIVATE — auto-publishes {publish_at} unless you delete/edit it"
-            log(f"🎉 Uploaded ({label}): {studio}")
-            telegram(f"🎬 New {kind}: {script['title']}\n{label}\n{studio}")
+            watch = f"https://www.youtube.com/shorts/{vid}" if kind == "short" else f"https://youtu.be/{vid}"
+            log(f"🎉 Uploaded ({label})")
+            log(f"🔗 Watch:  {watch}")
+            log(f"🛠️  Studio: {studio}")
+            summary = os.environ.get("GITHUB_STEP_SUMMARY")
+            if summary:
+                with open(summary, "a", encoding="utf-8") as fh:
+                    fh.write(f"### 🎬 {script['title']}\n\n- **Status:** {label}\n- **Watch:** {watch}\n"
+                             f"- **Studio:** {studio}\n- **Type:** {kind}\n")
+            telegram(f"🎬 New {kind}: {script['title']}\n{label}\nWatch: {watch}\nStudio: {studio}")
             return 0
 
     log("🛑 No story passed the quality bar this run. Nothing published (by design).")
