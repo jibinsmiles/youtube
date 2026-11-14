@@ -76,7 +76,6 @@ sources:
     - {name: "Hacker News",      url: "https://hnrss.org/frontpage?points=150"}
     - {name: "Inc42",            url: "https://inc42.com/feed/"}
     - {name: "Medianama",        url: "https://www.medianama.com/feed/"}
-    - {name: "Indian Express",   url: "https://indianexpress.com/section/technology/feed/"}
     - {name: "The Hindu",        url: "https://www.thehindu.com/sci-tech/technology/feeder/default.rss"}
 
 voice:
