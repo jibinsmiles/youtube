@@ -168,6 +168,7 @@ NARRATION TO CHECK:
 List every FACTUAL claim in the narration (numbers, dates, prices, names, quotes, specs, causal claims)
 that is NOT supported by the source material. Claims clearly framed as the narrator's opinion or analysis
 ("my read", "this likely means") are fine. Be precise and do not nitpick wording.
+Questions put to the audience (for example a closing question inviting comments) are not factual claims; ignore them.
 A statement about what the source material itself does or does not mention (for example "the report doesn't
 say when it reaches India") is acceptable if it is true. A claim that something has NOT been announced, is
 unavailable or does not exist, when the sources are silent on it, IS unsupported.

@@ -48,9 +48,9 @@ formats:
   short:
     width: 1080
     height: 1920
-    target: "100-125"
-    scene_words: "8-13"
-    min_words: 80
+    target: "95-125"
+    scene_words: "9-14"
+    min_words: 60               # ~25 s; the model tends to land a little under the target
     max_words: 145
     captions: true
   long:
