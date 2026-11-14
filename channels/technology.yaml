@@ -56,6 +56,9 @@ content_mix:
 evergreen:
   hint: "how everyday tech works (UPI, 5G, Wi-Fi, GPS, cloud, AI and chatbots, chips, batteries, encryption, the internet), smartphone and gadget concepts, cybersecurity basics, famous tech history, how startups and big tech companies work"
 
+alerts:
+  voice_fallback: false        # email when the natural voice falls back? Off on the free tier (it is expected)
+
 formats:
   short:
     width: 1080
@@ -94,6 +97,11 @@ voice:
   # Tried in this order for the whole video; a failure (quota, outage) falls through to the next provider.
   # elevenlabs only counts if ELEVENLABS_API_KEY and elevenlabs.voice_id are set. edge is the free last resort.
   providers: ["elevenlabs", "gemini", "edge"]
+  # Free-tier friendly: Shorts (about 7 voice calls) use the natural Gemini voice; long videos (about 35 calls, which
+  # the free quota cannot cover) use the free Edge voice. Remove this block if you ever enable billing.
+  providers_by_kind:
+    short: ["elevenlabs", "gemini", "edge"]
+    long: ["edge"]
   gemini:
     models: ["gemini-3.8-flash-tts", "gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"]
     voice: "Charon"            # Informative. Other good picks: Sadaltager (knowledgeable), Achird (friendly), Sulafat (warm), Iapetus (clear)

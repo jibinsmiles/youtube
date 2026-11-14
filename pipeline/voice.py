@@ -77,10 +77,12 @@ class _Quota(RuntimeError):
 
 
 class Narrator:
-    def __init__(self, cfg):
+    def __init__(self, cfg, kind=None):
         self.cfg = cfg
         v = cfg["voice"]
-        order = v.get("providers") or [v.get("provider", "edge")]
+        # providers_by_kind lets a channel spend its limited natural-voice quota on Shorts and use the free
+        # Edge voice for long videos (a long video needs ~35 Gemini calls, a Short only ~7).
+        order = (v.get("providers_by_kind") or {}).get(kind) or v.get("providers") or [v.get("provider", "edge")]
         usable = []
         for p in order:
             if p == "elevenlabs" and not (env("ELEVENLABS_API_KEY") and cfg.get("elevenlabs", {}).get("voice_id")):
@@ -251,8 +253,9 @@ class Narrator:
                 last_error = e
                 log(f"⚠️ Voice provider '{provider}' failed ({e}); trying the next one")
                 from .notify import alert
-                alert(self.cfg["name"], f"voice provider '{provider}' failed, falling back",
-                      f"{e}\nVideos may sound more robotic until this is fixed (quota/billing or an outage).")
+                if self.cfg.get("alerts", {}).get("voice_fallback", False):
+                  alert(self.cfg["name"], f"voice provider '{provider}' failed, falling back",
+                        f"{e}\nVideos may sound more robotic until this is fixed (quota/billing or an outage).")
                 for f in workdir.glob("voice_*"):
                     f.unlink(missing_ok=True)
                 continue

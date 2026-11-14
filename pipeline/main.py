@@ -46,7 +46,7 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
     scenes = script["scenes"]
 
     t0 = time.time()
-    voiced = Narrator(cfg).synthesize(scenes, workdir)
+    voiced = Narrator(cfg, kind).synthesize(scenes, workdir)
     wavs, durations = [w for w, _ in voiced], [d for _, d in voiced]
 
     # Each scene is cut into several shots (about one every 2.5-5 s), each with its own on-topic footage query.
