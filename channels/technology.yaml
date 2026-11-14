@@ -51,6 +51,11 @@ schedule:
   long_min_score: 7
   extra_long_min_score: 9      # only used if max_long_per_day > long_per_day
 
+content_mix:
+  evergreen_share: 0.75        # 75% timeless explainers (search / suggested traffic), 25% news-driven videos
+evergreen:
+  hint: "how everyday tech works (UPI, 5G, Wi-Fi, GPS, cloud, AI and chatbots, chips, batteries, encryption, the internet), smartphone and gadget concepts, cybersecurity basics, famous tech history, how startups and big tech companies work"
+
 formats:
   short:
     width: 1080

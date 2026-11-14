@@ -8,6 +8,9 @@ niche: "Car, EV and automotive industry news"
 audience: "Car fans and EV-curious buyers who want the real story behind new launches, recalls, prices and tech"
 timezone: America/New_York
 
+evergreen:
+  hint: "how engines, EVs, batteries and charging work, safety tech, car history, how car brands and models differ, driving physics, maintenance basics"
+
 style:
   persona: "A knowledgeable car enthusiast who explains launches, recalls and EV news with practical detail and a bit of humour."
   rules:

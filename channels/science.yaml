@@ -8,6 +8,9 @@ niche: "Science and space news explained simply"
 audience: "Curious adults and students who love space, physics, biology and big discoveries, and want to know what a finding really shows"
 timezone: America/New_York
 
+evergreen:
+  hint: "space and astronomy, physics ideas, biology and the human body, climate and Earth science, famous experiments and discoveries, how scientific tools work"
+
 style:
   persona: "A curious, plain-spoken science communicator who makes discoveries feel real without overstating them."
   rules:

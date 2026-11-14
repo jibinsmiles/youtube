@@ -67,10 +67,10 @@ class State:
         return [s["video_title"] for s in self.data["stories"]
                 if s.get("video_title") and same_story(tokens, set(s.get("tokens", [])))]
 
-    def record_story(self, story_id, title, kind, video_title, summary=""):
+    def record_story(self, story_id, title, kind, video_title, summary="", mode="news"):
         self.data["stories"].append({
             "id": story_id, "tokens": sorted(title_tokens(title)), "kinds": [kind],
-            "video_title": video_title, "summary": summary[:400], "ts": _now().isoformat()})
+            "video_title": video_title, "summary": summary[:400], "mode": mode, "ts": _now().isoformat()})
 
     def used_story_ids(self):
         """Articles we have already made a video from (never reuse the same article)."""
@@ -88,16 +88,17 @@ class State:
         return sorted(out, key=lambda v: v["ts"], reverse=True)
 
     # -- uploads -----------------------------------------------------------
-    def record_upload(self, channel, kind, video_id, title, privacy):
+    def record_upload(self, channel, kind, video_id, title, privacy, mode="news"):
         self.data["uploads"].append({"channel": channel, "kind": kind, "video_id": video_id,
-                                     "title": title, "privacy": privacy, "ts": _now().isoformat()})
+                                     "title": title, "privacy": privacy, "mode": mode, "ts": _now().isoformat()})
 
     def counts_today(self, channel, tz):
         today = _now().astimezone(tz).date()
-        counts = {"short": 0, "long": 0}
+        counts = {"short": 0, "long": 0, "evergreen": 0, "news": 0}
         for u in self.data["uploads"]:
             if u["channel"] == channel and datetime.fromisoformat(u["ts"]).astimezone(tz).date() == today:
                 counts[u["kind"]] = counts.get(u["kind"], 0) + 1
+                counts[u.get("mode", "news")] = counts.get(u.get("mode", "news"), 0) + 1
         return counts
 
     def minutes_since_last_upload(self, channel):

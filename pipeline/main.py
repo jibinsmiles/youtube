@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from . import news, research, scriptwriter
+from . import evergreen, news, research, scriptwriter
 from .captions import build_ass, word_timings
 from .config import ROOT, load_channel, log
 from .llm import Gemini
@@ -98,10 +98,40 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
     return video, thumb
 
 
+def _attempts(llm, cfg, state, counts, forced, mode):
+    """Yield (story, kind, dossier, angle) candidates for this run, best first, for one content mode."""
+    if mode == "evergreen":
+        kinds = candidate_kinds(cfg, counts, 8.0, forced)       # evergreen topics are always worth a video
+        for kind in kinds:
+            for story, dossier, angle in evergreen.candidates(llm, cfg, state, kind):
+                yield story, kind, dossier, angle
+        return
+    stories = news.fetch_candidates(cfg)
+    used = state.used_story_ids()
+    stories = [s for s in stories if s.id not in used]      # never reuse the same article
+    if not stories:
+        log("😴 No fresh unused stories.")
+        return
+    ranked = scriptwriter.rank_stories(llm, cfg, stories, recent=state.recent_videos())
+    for s, score, angle in ranked:
+        log(f"   {score:>4.1f}  {s.title[:90]}  [{s.source}, +{s.coverage}]")
+    for story, score, angle in ranked[:4]:
+        for kind in candidate_kinds(cfg, counts, score, forced):
+            dossier = research.build_dossier(story, kind, cfg)
+            need = cfg["research"]["min_chars_long" if kind == "long" else "min_chars_short"]
+            if dossier["chars"] < need:
+                log(f"⏭️  '{story.title[:60]}': only {dossier['chars']} chars of source text, "
+                    f"need {need} for a {kind}")
+                continue
+            yield story, kind, dossier, angle
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--channel", default="technology")
     ap.add_argument("--kind", default="auto", choices=["auto", "short", "long"])
+    ap.add_argument("--mode", default="auto", choices=["auto", "evergreen", "news"],
+                    help="force evergreen or news instead of following content_mix")
     ap.add_argument("--dry-run", action="store_true", help="render but do not upload")
     ap.add_argument("--visibility", choices=["public", "private"], default=None,
                     help="private = upload as a private test video and do NOT record it (topic stays available)")
@@ -138,27 +168,22 @@ def main(argv=None):
             return 0
 
     llm = Gemini()
-    stories = news.fetch_candidates(cfg)
-    used = state.used_story_ids()
-    stories = [s for s in stories if s.id not in used]      # never reuse the same article
-    if not stories:
-        log("😴 No fresh unused stories.")
-        return 0
+    share = float((cfg.get("content_mix") or {}).get("evergreen_share", 0.0))
+    total = counts["short"] + counts["long"]
+    want_ev = int(share * (total + 1) + 0.5)          # how many evergreen videos the day should have after this one
+    order = ["evergreen", "news"] if counts.get("evergreen", 0) < want_ev else ["news", "evergreen"]
+    if share <= 0:
+        order = ["news"]
+    elif share >= 1:
+        order = ["evergreen"]
+    if args.mode != "auto":
+        order = [args.mode]
+    log(f"🎚️ Content mix {share:.0%} evergreen — today {counts.get('evergreen', 0)} evergreen / "
+        f"{counts.get('news', 0)} news; this run tries: {' then '.join(order)}")
 
-    ranked = scriptwriter.rank_stories(llm, cfg, stories, recent=state.recent_videos())
-    for s, score, angle in ranked:
-        log(f"   {score:>4.1f}  {s.title[:90]}  [{s.source}, +{s.coverage}]")
-
-    for story, score, angle in ranked[:4]:
-        for kind in candidate_kinds(cfg, counts, score, forced):
-            dossier = research.build_dossier(story, kind, cfg)
-            need = cfg["research"]["min_chars_long" if kind == "long" else "min_chars_short"]
-            if dossier["chars"] < need:
-                log(f"⏭️  '{story.title[:60]}': only {dossier['chars']} chars of source text, "
-                    f"need {need} for a {kind}")
-                continue
-
-            log(f"🎯 Making a {kind.upper()} about: {story.title}")
+    for mode in order:
+        for story, kind, dossier, angle in _attempts(llm, cfg, state, counts, forced, mode):
+            log(f"🎯 Making a {kind.upper()} ({mode}) about: {story.title}")
             script = scriptwriter.verified_script(llm, cfg, kind, story, dossier, angle,
                                                   state.titles_for_story(story.title))
             if not script:
@@ -180,8 +205,8 @@ def main(argv=None):
             vid, privacy, publish_at = upload_video(build_service(cfg["id"]), cfg, kind, video, script,
                                                     dossier["sources"], thumb)
             if not private_test:
-                state.record_upload(cfg["id"], kind, vid, script["title"], privacy)
-                state.record_story(story.id, story.title, kind, script["title"], script.get("description", ""))
+                state.record_upload(cfg["id"], kind, vid, script["title"], privacy, mode)
+                state.record_story(story.id, story.title, kind, script["title"], script.get("description", ""), mode)
                 state.save()
             studio = f"https://studio.youtube.com/video/{vid}/edit"
             label = {"private": "PRIVATE — needs your approval", "public": "LIVE"}.get(privacy, privacy.upper())
@@ -195,8 +220,8 @@ def main(argv=None):
             if summary:
                 with open(summary, "a", encoding="utf-8") as fh:
                     fh.write(f"### 🎬 {script['title']}\n\n- **Status:** {label}\n- **Watch:** {watch}\n"
-                             f"- **Studio:** {studio}\n- **Type:** {kind}\n")
-            telegram(f"🎬 [{cfg['name']}] New {kind}: {script['title']}\n{label}\nWatch: {watch}\nStudio: {studio}")
+                             f"- **Studio:** {studio}\n- **Type:** {kind} ({mode})\n")
+            telegram(f"🎬 [{cfg['name']}] New {kind} ({mode}): {script['title']}\n{label}\nWatch: {watch}\nStudio: {studio}")
             return 0
 
     log("🛑 No story passed the quality bar this run. Nothing published (by design).")

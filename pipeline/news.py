@@ -26,6 +26,7 @@ class Story:
     coverage: int = 0                      # how many OTHER outlets ran a similar story
     related: list = field(default_factory=list)
     content: str = ""                      # full text from the feed itself (content:encoded), if provided
+    evergreen: bool = False                # True = timeless explainer (sources are encyclopedia text, not news)
 
 
 def _clean(html):

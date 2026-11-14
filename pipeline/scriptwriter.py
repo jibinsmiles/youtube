@@ -80,8 +80,20 @@ Include only the {top_n} best stories, best first."""
 # ---------------------------------------------------------------------------
 # 2. Script generation
 # ---------------------------------------------------------------------------
-def _spec(kind, cfg):
+def _spec(kind, cfg, evergreen=False):
     f = cfg["formats"][kind]
+    if evergreen:
+        structure = ("HOOK (scene 1: a surprising fact or a question the viewer has always wondered about) -> the simple "
+                     "answer up front -> how it works, step by step, with one concrete example or analogy -> "
+                     "the common misconception or the surprising detail -> why it matters to the viewer -> "
+                     "a closing line that leaves one open question. Clear teaching, spoken like a good explainer."
+                     if kind == "short" else
+                     "COLD OPEN hook (1-2 scenes, a surprising fact or the question everyone wonders about, no greeting) -> "
+                     "the short answer -> background viewers need -> how it works, step by step, with concrete examples "
+                     "and analogies -> the common misconceptions -> a real-world example or the history -> why it "
+                     "matters -> what to explore next -> one closing question for the comments.")
+        return (f"Total narration: {f['target']} words. Each scene: {f['scene_words']} words. "
+                f"Structure: {structure}")
     if kind == "short":
         structure = ("HOOK (scene 1: a surprising concrete fact or question, max 12 words) -> what happened -> "
                      "the one detail that matters -> what it means for viewers (an India angle ONLY if the sources "
@@ -105,12 +117,19 @@ def _prompt(cfg, kind, story, dossier, angle, avoid_titles, feedback):
              + "\n".join(f"- {t}" for t in avoid_titles)) if avoid_titles else ""
     fix = f"\nYour previous attempt was rejected. Fix these problems:\n- " + "\n- ".join(feedback) if feedback else ""
     shots = "1-2" if kind == "short" else "3-4"
+    if getattr(story, "evergreen", False):
+        attribution = ("- This is an EVERGREEN explainer: write it so it is still true and makes sense a year from now. "
+                       "No 'today', 'this week', 'recently', 'just announced' or dated references. State well-established "
+                       "facts plainly (no need to cite the encyclopedia on every line); attribute only disputed claims. "
+                       "The title should be search-friendly, like 'How UPI Actually Works' or 'Why Phones Get Hot'.")
+    else:
+        attribution = '- Attribute important claims ("according to The Verge", "the company says").'
     return f"""You write scripts for the YouTube channel "{cfg['name']}" ({cfg['niche']}).
 Audience: {cfg['audience']}
 Narrator persona: {style['persona']}
 
 FORMAT: {'YouTube Short (vertical)' if kind == 'short' else 'Long-form YouTube video (landscape)'}
-{_spec(kind, cfg)}
+{_spec(kind, cfg, getattr(story, 'evergreen', False))}
 Suggested angle: {angle}
 {avoid}
 RULES:
@@ -120,7 +139,7 @@ RULES:
 - Never say that something "has not been announced", "is not available" or "is unknown" unless the sources
   say exactly that. If the sources are silent on something (for example India pricing or availability), leave it
   out, or say "the report doesn't mention ...". Do not fill gaps with statements about what is or isn't known.
-- Attribute important claims ("according to The Verge", "the company says").
+{attribution}
 - Clearly separate fact from your own analysis ("my read is...", "here's what this likely means").
 - Never use these phrases: {banned}
 - Write for the ear: short sentences, plain words, spoken rhythm. No stage directions, no emojis, no hashtags.

@@ -10,6 +10,9 @@ on:
       channel:
         description: "all (every enabled channel) or one channel id, e.g. technology"
         default: "all"
+      mode:
+        description: "auto (follows content_mix) | evergreen | news"
+        default: "auto"
       kind:
         description: "auto | short | long"
         default: "auto"
@@ -92,10 +95,11 @@ jobs:
           YOUTUBE_REFRESH_TOKEN_GAMING: ${{ secrets.YOUTUBE_REFRESH_TOKEN_GAMING }}
           CHANNEL: ${{ matrix.channel }}
           INPUT_KIND: ${{ github.event.inputs.kind }}
+          INPUT_MODE: ${{ github.event.inputs.mode }}
           INPUT_VISIBILITY: ${{ github.event.inputs.visibility }}
         run: |
           KIND="${INPUT_KIND:-auto}"
-          python -m pipeline.main --channel "$CHANNEL" --kind "$KIND" --visibility "${INPUT_VISIBILITY:-public}"
+          python -m pipeline.main --channel "$CHANNEL" --kind "$KIND" --mode "${INPUT_MODE:-auto}" --visibility "${INPUT_VISIBILITY:-public}"
 
       - name: Save state (what this channel already covered)
         if: always()
