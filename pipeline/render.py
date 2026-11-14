@@ -79,3 +79,13 @@ def render_video(media, durations, voice_wavs, ass_path, width, height, out_path
 def extract_frame(clip_path, out_png, at=0.8):
     run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(at), "-i", str(clip_path),
          "-frames:v", "1", str(out_png)])
+
+
+def measure_loudness(path):
+    """Integrated loudness (LUFS) and true peak (dBTP) of the final file, for the run log."""
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-vn",
+                        "-af", "ebur128=peak=true", "-f", "null", "-"], capture_output=True, text=True)
+    import re
+    lufs = re.findall(r"I:\s+(-?[\d.]+) LUFS", r.stderr)
+    peak = re.findall(r"Peak:\s+(-?[\d.]+) dBFS", r.stderr)
+    return (float(lufs[-1]) if lufs else None, float(peak[-1]) if peak else None)

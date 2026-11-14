@@ -22,6 +22,8 @@ class Visuals:
         self.pixabay_key = env("PIXABAY_API_KEY")
         self.used = set(used_ids)
         self.new_ids = []
+        self.stats = {"video": 0, "photo": 0, "gradient": 0}
+        self.by_provider = {}
         order = cfg["visuals"].get("providers", ["pixabay", "pexels"])
         self.providers = [p for p in order if (p == "pexels" and self.pexels_key)
                           or (p == "pixabay" and self.pixabay_key)]
@@ -171,15 +173,20 @@ class Visuals:
             for provider in self.providers:
                 try:
                     if finders[provider][0](q, portrait, workdir / f"media_{idx:03d}.mp4"):
+                        self.stats["video"] += 1
+                        self.by_provider[provider] = self.by_provider.get(provider, 0) + 1
                         return "video", workdir / f"media_{idx:03d}.mp4"
                 except Exception as e:
                     log(f"⚠️ {provider} video lookup failed for '{q}': {e}")
             for provider in self.providers:
                 try:
                     if finders[provider][1](q, portrait, workdir / f"media_{idx:03d}.jpg"):
+                        self.stats["photo"] += 1
+                        self.by_provider[provider] = self.by_provider.get(provider, 0) + 1
                         return "photo", workdir / f"media_{idx:03d}.jpg"
                 except Exception as e:
                     log(f"⚠️ {provider} photo lookup failed for '{q}': {e}")
         img = workdir / f"media_{idx:03d}.png"
         self._gradient(img, width, height, seed=idx + sum(map(ord, query)))
+        self.stats["gradient"] += 1
         return "photo", img

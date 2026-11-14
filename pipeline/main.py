@@ -15,7 +15,7 @@ from .captions import build_ass, word_timings
 from .config import ROOT, load_channel, log
 from .llm import Gemini
 from .notify import telegram
-from .render import extract_frame, pick_music, render_video
+from .render import extract_frame, measure_loudness, pick_music, render_video
 from .state import State
 from .thumbnail import make_thumbnail
 from .visuals import Visuals
@@ -44,12 +44,18 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
     width, height, portrait = fmt["width"], fmt["height"], kind == "short"
     scenes = script["scenes"]
 
+    t0 = time.time()
     voiced = Narrator(cfg).synthesize(scenes, workdir)
     wavs, durations = [w for w, _ in voiced], [d for _, d in voiced]
 
     vis = Visuals(cfg, state.data["pexels_used"])
     media = [vis.fetch(s["visual_query"], portrait, workdir, i, width, height) for i, s in enumerate(scenes)]
     state.data["pexels_used"].extend(vis.new_ids)
+    log(f"🖼️  Visuals: {vis.stats['video']} stock videos, {vis.stats['photo']} photos, "
+        f"{vis.stats['gradient']} gradient fallbacks (by provider: {vis.by_provider or 'none'}) "
+        f"[{time.time() - t0:.0f}s so far]")
+    if vis.stats["gradient"] > len(scenes) * 0.3:
+        log("⚠️  Over 30% of scenes fell back to plain gradients — check the footage API key / queries.")
 
     timings, t = [], 0.0
     for s, d in zip(scenes, durations):
@@ -63,6 +69,9 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
     render_video(media, durations, wavs, ass, width, height, video, workdir,
                  captions=fmt.get("captions", True), music=pick_music())
 
+    lufs, peak = measure_loudness(video)
+    log(f"🔊 Audio loudness: {lufs} LUFS, peak {peak} dBFS (target about -16 LUFS) | "
+        f"file {video.stat().st_size / 1e6:.0f} MB | total {time.time() - t0:.0f}s")
     thumb = None
     if kind == "long":
         extract_frame(workdir / "scene_000.mp4", workdir / "frame.png")
