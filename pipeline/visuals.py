@@ -29,7 +29,7 @@ class Visuals:
         self.new_ids = []
         self._last_pixabay = 0.0
         self._cache = {}
-        self.stats = {"video": 0, "photo": 0, "gradient": 0}
+        self.stats = {"video": 0, "photo": 0, "gradient": 0, "card": 0}
         self.by_provider = {}
         order = cfg["visuals"].get("providers", ["pixabay", "pexels"])
         self.providers = [p for p in order if (p == "pexels" and self.pexels_key)
@@ -264,7 +264,7 @@ class Visuals:
             data = llm.generate("", json_mode=True, temperature=0.0, max_tokens=2048, parts=parts)
         except Exception as e:
             log(f"⚠️ Visual check unavailable ({type(e).__name__}: {str(e)[:120]}); using tag matching instead")
-            return {}
+            return None
         picks = {}
         for p in data.get("picks", []):
             try:
@@ -286,10 +286,16 @@ class Visuals:
             for start in range(0, len(shots), batch):
                 chunk = range(start, min(start + batch, len(shots)))
                 picks = self._judge(llm, [shots[i] for i in chunk], [cands[i] for i in chunk])
+                if picks is None:                         # judge unavailable: leave these to the tag-matching search
+                    continue
                 for local, i in enumerate(chunk, 1):
                     choice = picks.get(local)
                     if choice is None:
                         rejected += 1
+                        dest = workdir / f"media_{i:03d}.png"
+                        self._card(dest, width, height, shots[i][0], seed=i + sum(map(ord, shots[i][0])))
+                        self.stats["card"] += 1
+                        results[i] = ("photo", dest)
                         continue
                     opt = cands[i][choice]
                     if opt["id"] in self.used:               # another shot already took this clip
@@ -308,13 +314,51 @@ class Visuals:
                     accepted += 1
                     log(f"   🖼️ shot {i + 1}: '{shots[i][0]}' -> {opt['kind']} [{opt['tags'][:60]}]")
             log(f"🔍 Visual check: {accepted}/{len(shots)} shots matched by looking at the footage, "
-                f"{rejected} had no good option and use the fallback search")
+                f"{rejected} had no fitting footage and show a branded text card")
         for i, (q, _) in enumerate(shots):
             if results[i] is None:
                 results[i] = self.fetch(q, portrait, workdir, i, width, height)
         return results
 
     # -- generated fallback ------------------------------------------------
+    @staticmethod
+    def _card(dest, width, height, text, seed):
+        """Branded text card (dark gradient + accent bar + big phrase) for shots with no fitting footage."""
+        from PIL import ImageFont
+        Visuals._gradient(dest, width, height, seed)
+        img = Image.open(dest).convert("RGB")
+        d = ImageDraw.Draw(img)
+        text = re.sub(r"[^\w\s$%₹&'-]", "", text).upper().strip() or "TECH TADKA"
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+        size = int(width * (0.11 if height > width else 0.07))
+        max_w = int(width * 0.78)
+        while True:
+            try:
+                font = ImageFont.truetype(font_path, size)
+            except OSError:
+                font = ImageFont.load_default()
+                break
+            lines, cur = [], ""
+            for w in text.split():
+                trial = (cur + " " + w).strip()
+                if cur and d.textlength(trial, font=font) > max_w:
+                    lines.append(cur)
+                    cur = w
+                else:
+                    cur = trial
+            lines.append(cur)
+            if max(d.textlength(l, font=font) for l in lines) <= max_w or size <= 40:
+                break
+            size = int(size * 0.9)
+        line_h = int(size * 1.25)
+        top = (height - line_h * len(lines)) // 2
+        bar_w = int(width * 0.18)
+        d.rounded_rectangle(((width - bar_w) // 2, top - int(size * 0.7), (width + bar_w) // 2,
+                             top - int(size * 0.7) + 10), 5, fill=(255, 138, 0))
+        for k, l in enumerate(lines):
+            d.text(((width - d.textlength(l, font=font)) / 2, top + k * line_h), l, font=font, fill=(255, 255, 255))
+        img.save(dest)
+
     @staticmethod
     def _gradient(dest, width, height, seed):
         rnd = random.Random(seed)

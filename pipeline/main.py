@@ -64,7 +64,7 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir, llm=None
     shot_secs = snap_to_frames(shot_secs)
     state.data["pexels_used"].extend(vis.new_ids)
     log(f"🖼️  Visuals: {n} shots across {len(scenes)} scenes — {vis.stats['video']} stock videos, "
-        f"{vis.stats['photo']} photos, {vis.stats['gradient']} gradient fallbacks "
+        f"{vis.stats['photo']} photos, {vis.stats['card']} text cards, {vis.stats['gradient']} gradient fallbacks "
         f"(by provider: {vis.by_provider or 'none'}) [{time.time() - t0:.0f}s so far]")
     if vis.stats["gradient"] > n * 0.3:
         log("⚠️  Over 30% of shots fell back to plain gradients — check the footage API key / queries.")
