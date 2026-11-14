@@ -4,6 +4,8 @@ Set PIXABAY_API_KEY and/or PEXELS_API_KEY. Providers are tried in the order give
 `visuals.providers` in the channel YAML, skipping any whose key is not set.
 """
 import random
+import re
+import time
 from pathlib import Path
 
 import requests
@@ -22,6 +24,8 @@ class Visuals:
         self.pixabay_key = env("PIXABAY_API_KEY")
         self.used = set(used_ids)
         self.new_ids = []
+        self._last_pixabay = 0.0
+        self._cache = {}
         self.stats = {"video": 0, "photo": 0, "gradient": 0}
         self.by_provider = {}
         order = cfg["visuals"].get("providers", ["pixabay", "pexels"])
@@ -96,54 +100,79 @@ class Visuals:
         return False
 
     # -- Pixabay -----------------------------------------------------------
-    def _pixabay_video(self, query, portrait, dest):
-        r = requests.get(f"{PIXABAY}/videos/", params={
-            "key": self.pixabay_key, "q": query, "per_page": 20, "safesearch": "true"}, timeout=25)
-        r.raise_for_status()
-        candidates = []   # (orientation_penalty, id, url)
-        for hit in r.json().get("hits", []):
+    def _pixabay_get(self, path, params):
+        """Rate-limited (Pixabay allows ~100 requests/minute) and cached for the duration of one run."""
+        key = (path, tuple(sorted(params.items())))
+        if key in self._cache:
+            return self._cache[key]
+        wait = 0.7 - (time.time() - self._last_pixabay)
+        if wait > 0:
+            time.sleep(wait)
+        for attempt in range(3):
+            self._last_pixabay = time.time()
+            r = requests.get(f"{PIXABAY}{path}", params={"key": self.pixabay_key, **params}, timeout=25)
+            if r.status_code == 429:
+                time.sleep(15 * (attempt + 1))
+                continue
+            r.raise_for_status()
+            self._cache[key] = r.json()
+            return self._cache[key]
+        raise RuntimeError("Pixabay rate limit")
+
+    @staticmethod
+    def _relevance(query, hit):
+        """How many words of the search query appear in the clip's own tags (higher = more on-topic)."""
+        words = {w for w in re.findall(r"[a-z]{3,}", query.lower())} - {"the", "and", "with", "for"}
+        tags = (hit.get("tags") or "").lower()
+        return sum(1 for w in words if w in tags)
+
+    def _pixabay_video(self, query, portrait, dest, strict=False):
+        data = self._pixabay_get("/videos/", {"q": query, "per_page": 30, "safesearch": "true"})
+        candidates = []   # (orientation_penalty, -relevance, id, url)
+        for hit in data.get("hits", []):
             if f"x{hit['id']}" in self.used or hit.get("duration", 0) < 4:
                 continue
             for size in ("large", "medium"):          # prefer HD, skip 4K-sized files
                 v = (hit.get("videos") or {}).get(size) or {}
                 w, h = v.get("width") or 0, v.get("height") or 0
-                if v.get("url") and max(w, h) >= 1280 and max(w, h) <= 2600:
+                if v.get("url") and 1280 <= max(w, h) <= 2600:
                     fits = (h > w) if portrait else (w >= h)
-                    candidates.append((0 if fits else 1, hit["id"], v["url"]))
+                    candidates.append((0 if fits else 1, -self._relevance(query, hit), hit["id"], v["url"]))
                     break
-        if not candidates:
-            return False
-        # Shorts: prefer vertical clips, but a landscape clip gets centre-cropped by the renderer.
-        # Long videos: only landscape clips (a cropped vertical clip would look terrible).
+        # Shorts prefer vertical clips (a landscape clip gets centre-cropped); long videos only use landscape.
         if not portrait:
             candidates = [c for c in candidates if c[0] == 0]
-        candidates.sort(key=lambda c: c[0])
-        # shuffle within each orientation group so vertical clips stay ahead of cropped landscape ones
-        ordered = []
-        for penalty in sorted({c[0] for c in candidates}):
-            group = [c for c in candidates if c[0] == penalty]
-            random.shuffle(group)
-            ordered += group
-        for _, vid, url in ordered[:5]:
+        if not candidates:
+            return False
+        candidates.sort(key=lambda c: (c[0], c[1]))
+        best = candidates[0]
+        if strict and best[1] == 0:                    # nothing on-topic for this query -> try a different query
+            return False
+        group = [c for c in candidates if c[:2] == best[:2]]
+        random.shuffle(group)
+        for _, _, vid, url in group[:4]:
             self._download(url, dest)
             self._mark(f"x{vid}")
             return True
         return False
 
-    def _pixabay_photo(self, query, portrait, dest):
-        params = {"key": self.pixabay_key, "q": query, "image_type": "photo", "per_page": 20,
-                  "safesearch": "true", "orientation": "vertical" if portrait else "horizontal"}
+    def _pixabay_photo(self, query, portrait, dest, strict=False):
+        params = {"q": query, "image_type": "photo", "per_page": 30, "safesearch": "true",
+                  "orientation": "vertical" if portrait else "horizontal"}
         params["min_height" if portrait else "min_width"] = 1000
-        r = requests.get(f"{PIXABAY}/", params=params, timeout=25)
-        r.raise_for_status()
-        hits = [h for h in r.json().get("hits", [])
-                if f"q{h['id']}" not in self.used and h.get("largeImageURL")]
-        if hits:
-            hit = random.choice(hits[:5])
-            self._download(hit["largeImageURL"], dest)
-            self._mark(f"q{hit['id']}")
-            return True
-        return False
+        data = self._pixabay_get("/", params)
+        hits = [h for h in data.get("hits", []) if f"q{h['id']}" not in self.used and h.get("largeImageURL")]
+        if not hits:
+            return False
+        hits.sort(key=lambda h: -self._relevance(query, h))
+        if strict and self._relevance(query, hits[0]) == 0:
+            return False
+        top = self._relevance(query, hits[0])
+        group = [h for h in hits if self._relevance(query, h) == top][:4]
+        hit = random.choice(group)
+        self._download(hit["largeImageURL"], dest)
+        self._mark(f"q{hit['id']}")
+        return True
 
     # -- generated fallback ------------------------------------------------
     @staticmethod
@@ -162,30 +191,32 @@ class Visuals:
 
     # -- public ------------------------------------------------------------
     def fetch(self, query, portrait, workdir, idx, width, height):
-        """Return ('video'|'photo', path). Never raises — falls back to a generated gradient."""
+        """Return ('video'|'photo', path). Never raises — falls back to a generated gradient.
+
+        Order: on-topic videos for the scene's own queries, then on-topic photos, then generic fallback
+        videos/photos. The scene's own queries must match a clip's tags to be accepted, so footage stays on-topic;
+        only the generic fallback queries accept anything."""
         workdir = Path(workdir)
         words = query.split()
-        queries = [query] + ([" ".join(words[:2])] if len(words) > 2 else []) + \
-                  self.cfg["visuals"]["fallback_queries"]
-        finders = {"pexels": (self._pexels_video, self._pexels_photo),
-                   "pixabay": (self._pixabay_video, self._pixabay_photo)}
-        for q in queries:
+        specific = [query] + ([" ".join(words[:2])] if len(words) > 2 else [])
+        fallback = self.cfg["visuals"]["fallback_queries"]
+        attempts = ([(q, True, "video") for q in specific] + [(q, True, "photo") for q in specific] +
+                    [(q, False, "video") for q in fallback] + [(q, False, "photo") for q in fallback])
+        finders = {"pexels": {"video": self._pexels_video, "photo": self._pexels_photo},
+                   "pixabay": {"video": self._pixabay_video, "photo": self._pixabay_photo}}
+        for q, strict, media_kind in attempts:
+            dest = workdir / f"media_{idx:03d}.{'mp4' if media_kind == 'video' else 'jpg'}"
             for provider in self.providers:
                 try:
-                    if finders[provider][0](q, portrait, workdir / f"media_{idx:03d}.mp4"):
-                        self.stats["video"] += 1
-                        self.by_provider[provider] = self.by_provider.get(provider, 0) + 1
-                        return "video", workdir / f"media_{idx:03d}.mp4"
+                    fn = finders[provider][media_kind]
+                    ok = fn(q, portrait, dest, strict) if provider == "pixabay" else fn(q, portrait, dest)
                 except Exception as e:
-                    log(f"⚠️ {provider} video lookup failed for '{q}': {e}")
-            for provider in self.providers:
-                try:
-                    if finders[provider][1](q, portrait, workdir / f"media_{idx:03d}.jpg"):
-                        self.stats["photo"] += 1
-                        self.by_provider[provider] = self.by_provider.get(provider, 0) + 1
-                        return "photo", workdir / f"media_{idx:03d}.jpg"
-                except Exception as e:
-                    log(f"⚠️ {provider} photo lookup failed for '{q}': {e}")
+                    log(f"⚠️ {provider} {media_kind} lookup failed for '{q}': {e}")
+                    continue
+                if ok:
+                    self.stats[media_kind] += 1
+                    self.by_provider[provider] = self.by_provider.get(provider, 0) + 1
+                    return media_kind, dest
         img = workdir / f"media_{idx:03d}.png"
         self._gradient(img, width, height, seed=idx + sum(map(ord, query)))
         self.stats["gradient"] += 1

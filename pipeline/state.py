@@ -65,10 +65,25 @@ class State:
         return [s["video_title"] for s in self.data["stories"]
                 if s.get("video_title") and same_story(tokens, set(s.get("tokens", [])))]
 
-    def record_story(self, story_id, title, kind, video_title):
+    def record_story(self, story_id, title, kind, video_title, summary=""):
         self.data["stories"].append({
             "id": story_id, "tokens": sorted(title_tokens(title)), "kinds": [kind],
-            "video_title": video_title, "ts": _now().isoformat()})
+            "video_title": video_title, "summary": summary[:400], "ts": _now().isoformat()})
+
+    def used_story_ids(self):
+        """Articles we have already made a video from (never reuse the same article)."""
+        return {s["id"] for s in self.data["stories"]}
+
+    def recent_videos(self, days=10):
+        """Videos published recently: [{'title', 'summary', 'tokens', 'kind', 'ts'}], newest first."""
+        cutoff = _now() - timedelta(days=days)
+        out = []
+        for s in self.data["stories"]:
+            if s.get("video_title") and datetime.fromisoformat(s["ts"]) >= cutoff:
+                out.append({"title": s["video_title"], "summary": s.get("summary", ""),
+                            "tokens": set(s.get("tokens", [])) | title_tokens(s["video_title"]),
+                            "kind": (s.get("kinds") or ["short"])[0], "ts": s["ts"]})
+        return sorted(out, key=lambda v: v["ts"], reverse=True)
 
     # -- uploads -----------------------------------------------------------
     def record_upload(self, channel, kind, video_id, title, privacy):
@@ -86,3 +101,13 @@ class State:
     def minutes_since_last_upload(self, channel):
         times = [datetime.fromisoformat(u["ts"]) for u in self.data["uploads"] if u["channel"] == channel]
         return (_now() - max(times)).total_seconds() / 60 if times else None
+
+
+def closest_recent(title, recent):
+    """Most similar recent video to a headline: (video_or_None, jaccard_0_to_1)."""
+    tokens, best, best_j = title_tokens(title), None, 0.0
+    for v in recent:
+        j = len(tokens & v["tokens"]) / (len(tokens | v["tokens"]) or 1)
+        if j > best_j:
+            best, best_j = v, j
+    return best, best_j

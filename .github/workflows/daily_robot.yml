@@ -11,6 +11,11 @@ on:
       kind:
         description: "auto | short | long"
         default: "auto"
+      visibility:
+        description: "public = normal run | private = upload as a private TEST video (not recorded, topic stays available)"
+        type: choice
+        options: [public, private]
+        default: public
 
 permissions:
   contents: write            # lets the job commit data/state.json back to the repo
@@ -51,9 +56,10 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           INPUT_KIND: ${{ github.event.inputs.kind }}
+          INPUT_VISIBILITY: ${{ github.event.inputs.visibility }}
         run: |
           KIND="${INPUT_KIND:-auto}"
-          python -m pipeline.main --channel technology --kind "$KIND"
+          python -m pipeline.main --channel technology --kind "$KIND" --visibility "${INPUT_VISIBILITY:-public}"
 
       - name: Save state (what we already covered)
         if: always()

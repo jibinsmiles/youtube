@@ -15,16 +15,28 @@ def run(cmd, cwd=None):
         raise RuntimeError(f"ffmpeg failed: {' '.join(map(str, cmd[:6]))} ...\n{r.stderr[-1500:]}")
 
 
+def snap_to_frames(durations):
+    """Round shot lengths to whole frames using cumulative rounding, so cuts land on exact frames and the
+    video length never drifts away from the audio no matter how many shots there are."""
+    out, cum, prev = [], 0.0, 0
+    for d in durations:
+        cum += d
+        end = int(round(cum * FPS))
+        out.append(max(end - prev, 1) / FPS)
+        prev = max(end, prev + 1)
+    return out
+
+
 def build_scene_clip(kind_media, media_path, duration, width, height, out_path, idx):
     base = ["ffmpeg", "-y", "-loglevel", "error"]
     enc = ["-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "17", "-pix_fmt", "yuv420p", "-r", str(FPS)]
+    frames = max(int(round(duration * FPS)), 2)
     if kind_media == "video":
         vf = (f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},"
               f"setsar=1,fps={FPS},eq=contrast=1.04:saturation=1.08,format=yuv420p")
-        run(base + ["-stream_loop", "-1", "-i", str(media_path), "-t", f"{duration:.3f}", "-vf", vf] + enc
+        run(base + ["-stream_loop", "-1", "-i", str(media_path), "-vf", vf, "-frames:v", str(frames)] + enc
             + [str(out_path)])
     else:
-        frames = max(int(round(duration * FPS)), 2)
         up_w, up_h = int(width * 1.5) // 2 * 2, int(height * 1.5) // 2 * 2
         zoom = (f"1+0.18*on/{frames}" if idx % 2 == 0 else f"1.18-0.18*on/{frames}")   # alternate in / out
         vf = (f"scale={up_w}:{up_h}:force_original_aspect_ratio=increase,crop={up_w}:{up_h},"

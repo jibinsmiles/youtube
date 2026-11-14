@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from pipeline.captions import build_ass, word_timings          # noqa: E402
 from pipeline.config import load_channel                         # noqa: E402
-from pipeline.render import extract_frame, render_video          # noqa: E402
+from pipeline.render import extract_frame, render_video, snap_to_frames          # noqa: E402
 from pipeline.scriptwriter import validate                       # noqa: E402
 from pipeline.thumbnail import make_thumbnail                    # noqa: E402
 from pipeline.visuals import Visuals                             # noqa: E402
@@ -36,6 +36,8 @@ def make_case(kind, width, height, work):
     cfg = load_channel("technology")
     vis = Visuals(cfg, [])
     media, durations, wavs, timings, t = [], [], [], [], 0.0
+    callouts = ["$5 BILLION", "", "NVIDIA CEO", "44,077 chips on the list"]
+    shots, shot_secs = [], []
     for i, text in enumerate(TEXTS):
         dur = 2.5 + i * 0.4
         wav = work / f"voice_{i:03d}.wav"
@@ -45,7 +47,8 @@ def make_case(kind, width, height, work):
         ff("-i", wav, "-af", f"apad=pad_dur={PAD_SECONDS}", wav2)
         wavs.append(wav2)
         durations.append(probe_duration(wav2))
-        timings.append({"start": t, "words": word_timings(text, t, durations[-1] - PAD_SECONDS)})
+        timings.append({"start": t, "dur": durations[-1], "callout": callouts[i],
+                        "words": word_timings(text, t, durations[-1] - PAD_SECONDS)})
         t += durations[-1]
         if i % 2 == 0:       # a test-pattern "stock video"
             p = work / f"media_{i:03d}.mp4"
@@ -55,12 +58,16 @@ def make_case(kind, width, height, work):
             p = work / f"media_{i:03d}.png"
             vis._gradient(p, width, height, i)
             media.append(("photo", p))
+    for m, d in zip(media, durations):            # two shots per scene, like the real pipeline
+        shots += [m, m]
+        shot_secs += [d / 2, d / 2]
+    shot_secs = snap_to_frames(shot_secs)
     music = work / "music.wav"
     ff("-f", "lavfi", "-i", "sine=frequency=110:duration=5", "-ar", 44100, "-ac", 2, music)
     ass = work / "captions.ass"
-    ass.write_text(build_ass(timings, kind, width, height))
+    ass.write_text(build_ass(timings, kind, width, height, show_captions=(kind == "short")))
     out = work / f"{kind}.mp4"
-    render_video(media, durations, wavs, ass, width, height, out, work, captions=True, music=music)
+    render_video(shots, shot_secs, wavs, ass, width, height, out, work, captions=True, music=music)
     assert out.exists() and out.stat().st_size > 20_000, "output missing or tiny"
     dur = probe_duration(out)
     assert abs(dur - sum(durations)) < 0.6, f"duration mismatch {dur} vs {sum(durations)}"
@@ -84,7 +91,7 @@ def main():
     print("Script validation gate…")
     cfg = load_channel("technology")
     bad = {"title": "x", "scenes": [{"narration": "Welcome back to the channel, this is a game-changer.",
-                                      "visual_query": "laptop"}]}
+                                      "shots": ["laptop"]}]}
     problems = validate(bad, "short", cfg)
     assert problems, "validator should reject filler"
     print(f"  ✅ rejected filler: {problems[:2]}")

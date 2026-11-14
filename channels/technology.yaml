@@ -18,6 +18,7 @@ style:
     - "Add an India angle only when the sources support one; otherwise focus on the wider impact."
     - "Keep a calm, credible tone. No hype, no fear-mongering, no insulting any company or person."
     - "End with one specific question that invites comments. Do not beg for likes or subscribes."
+    - "Write the way people actually talk: use contractions, mix very short sentences with longer ones, and avoid stacked adjectives or formal connectors."
   banned_phrases:
     - "game-changer"
     - "game changer"
@@ -31,6 +32,11 @@ style:
     - "mind-blowing"
     - "stay tuned"
     - "welcome back"
+    - "furthermore"
+    - "moreover"
+    - "delve"
+    - "in conclusion"
+    - "it is worth noting"
     - "don't forget to subscribe"
     - "smash that"
 
@@ -79,8 +85,14 @@ sources:
     - {name: "The Hindu",        url: "https://www.thehindu.com/sci-tech/technology/feeder/default.rss"}
 
 voice:
-  provider: edge               # edge (free) or elevenlabs (paid, more natural)
-  voices: ["en-IN-NeerjaExpressiveNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural"]
+  # Tried in this order for the whole video; a failure (quota, outage) falls through to the next provider.
+  # elevenlabs only counts if ELEVENLABS_API_KEY and elevenlabs.voice_id are set. edge is the free last resort.
+  providers: ["elevenlabs", "gemini", "edge"]
+  gemini:
+    models: ["gemini-3.8-flash-tts", "gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"]
+    voice: "Charon"            # Informative. Other good picks: Sadaltager (knowledgeable), Achird (friendly), Sulafat (warm), Iapetus (clear)
+    style: "Warm, confident and conversational, like a friendly tech journalist explaining the news to a smart friend. Natural pace with small pauses, light emphasis on the key facts, never like a news announcer reading a teleprompter."
+  voices: ["en-IN-NeerjaExpressiveNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural"]   # edge-tts fallback
   rate: "+4%"
 
 elevenlabs:                    # only used if provider: elevenlabs (+ ELEVENLABS_API_KEY secret)

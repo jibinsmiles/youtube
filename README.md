@@ -37,9 +37,27 @@ Replace your old `youtube_daily_pipeline.py` and `.github/workflows/daily_robot.
 
 ## Running it
 The schedule runs automatically; every run uploads straight to the channel (`publish.mode: auto` = public
-immediately). To trigger one by hand: Actions → *Daily video robot* → **Run workflow** (`kind = auto | short | long`).
-Nothing is saved as a downloadable file. If you want a safety net, set `publish.mode: veto` (private, goes public
-after 3 h unless you delete it) or `review` (private until you publish it in YouTube Studio).
+immediately). To trigger one by hand: Actions → *Daily video robot* → **Run workflow**:
+- `kind`: `auto | short | long`
+- `visibility`: `public` (normal) or `private` (uploads a **private test video** to YouTube Studio, is NOT recorded,
+  so its topic stays available for a real run — delete it afterwards or publish it if you like it)
+
+Nothing is saved as a downloadable file. For a safety net on scheduled runs set `publish.mode: veto` (private,
+goes public after 3 h unless you delete it) or `review` (private until you publish it in YouTube Studio).
+
+## Voice
+`voice.providers` is tried in order for the whole video: `elevenlabs` (paid, needs key + voice id) → `gemini`
+(natural, uses your `GEMINI_API_KEY`; pick a voice in `voice.gemini.voice`) → `edge` (free, most robotic).
+If a provider fails or hits its quota the video is re-voiced with the next one, never mixing two voices.
+
+## One video per topic
+Each run compares candidate stories with the videos published in the last 10 days. A topic we already covered is
+skipped unless the story reports a materially new development; then the video covers only what is new.
+The same article is never used twice.
+
+## Visuals
+Each scene is cut into several shots (about one every 2.5-5 s). Footage must match the clip's own tags to be
+accepted, and key numbers/names pop up as on-screen callouts (only text that is in the narration).
 
 Local offline check (no API keys): `python scripts/smoke_test.py`
 

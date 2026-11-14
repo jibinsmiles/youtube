@@ -16,7 +16,7 @@ from .captions import build_ass, word_timings
 from .config import ROOT, load_channel, log
 from .llm import Gemini
 from .notify import telegram
-from .render import extract_frame, measure_loudness, pick_music, render_video
+from .render import extract_frame, measure_loudness, pick_music, render_video, snap_to_frames
 from .state import State
 from .thumbnail import make_thumbnail
 from .visuals import Visuals
@@ -49,26 +49,36 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir):
     voiced = Narrator(cfg).synthesize(scenes, workdir)
     wavs, durations = [w for w, _ in voiced], [d for _, d in voiced]
 
+    # Each scene is cut into several shots (about one every 2.5-5 s), each with its own on-topic footage query.
     vis = Visuals(cfg, state.data["pexels_used"])
-    media = [vis.fetch(s["visual_query"], portrait, workdir, i, width, height) for i, s in enumerate(scenes)]
+    shot_media, shot_secs, n = [], [], 0
+    for s, d in zip(scenes, durations):
+        queries = s.get("shots") or [s.get("visual_query", "technology")]
+        count = max(1, min(len(queries), int(d // 2.5)))
+        for q in queries[:count]:
+            shot_media.append(vis.fetch(q, portrait, workdir, n, width, height))
+            shot_secs.append(d / count)
+            n += 1
+    shot_secs = snap_to_frames(shot_secs)
     state.data["pexels_used"].extend(vis.new_ids)
-    log(f"🖼️  Visuals: {vis.stats['video']} stock videos, {vis.stats['photo']} photos, "
-        f"{vis.stats['gradient']} gradient fallbacks (by provider: {vis.by_provider or 'none'}) "
-        f"[{time.time() - t0:.0f}s so far]")
-    if vis.stats["gradient"] > len(scenes) * 0.3:
-        log("⚠️  Over 30% of scenes fell back to plain gradients — check the footage API key / queries.")
+    log(f"🖼️  Visuals: {n} shots across {len(scenes)} scenes — {vis.stats['video']} stock videos, "
+        f"{vis.stats['photo']} photos, {vis.stats['gradient']} gradient fallbacks "
+        f"(by provider: {vis.by_provider or 'none'}) [{time.time() - t0:.0f}s so far]")
+    if vis.stats["gradient"] > n * 0.3:
+        log("⚠️  Over 30% of shots fell back to plain gradients — check the footage API key / queries.")
 
     timings, t = [], 0.0
     for s, d in zip(scenes, durations):
-        timings.append({"start": t, "words": word_timings(s["narration"], t, max(d - PAD_SECONDS, 0.3))})
+        timings.append({"start": t, "dur": d, "callout": s.get("callout", ""),
+                        "words": word_timings(s["narration"], t, max(d - PAD_SECONDS, 0.3))})
         t += d
     ass = workdir / "captions.ass"
-    ass.write_text(build_ass(timings, kind, width, height), encoding="utf-8")
+    ass.write_text(build_ass(timings, kind, width, height, show_captions=fmt.get("captions", True)), encoding="utf-8")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     video = out_dir / f"{cfg['id']}_{kind}_{int(time.time())}.mp4"
-    render_video(media, durations, wavs, ass, width, height, video, workdir,
-                 captions=fmt.get("captions", True), music=pick_music())
+    render_video(shot_media, shot_secs, wavs, ass, width, height, video, workdir,
+                 captions=True, music=pick_music())
 
     lufs, peak = measure_loudness(video)
     log(f"🔊 Audio loudness: {lufs} LUFS, peak {peak} dBFS (target about -16 LUFS) | "
@@ -86,9 +96,16 @@ def main(argv=None):
     ap.add_argument("--channel", default="technology")
     ap.add_argument("--kind", default="auto", choices=["auto", "short", "long"])
     ap.add_argument("--dry-run", action="store_true", help="render but do not upload")
+    ap.add_argument("--visibility", choices=["public", "private"], default=None,
+                    help="private = upload as a private test video and do NOT record it (topic stays available)")
     args = ap.parse_args(argv)
 
     cfg = load_channel(args.channel)
+    private_test = args.visibility == "private"
+    if private_test:
+        cfg["publish"]["mode"] = "review"
+        log("🔒 Private test run — the video is uploaded as PRIVATE and is not recorded in state, so its topic "
+            "stays available for a real run.")
     tz = ZoneInfo(cfg["timezone"])
     state = State.load()
     forced = None if args.kind == "auto" else args.kind
@@ -115,20 +132,18 @@ def main(argv=None):
 
     llm = Gemini()
     stories = news.fetch_candidates(cfg)
-    stories = [s for s in stories if len(state.story_kinds(s.id, s.title)) < 2]
+    used = state.used_story_ids()
+    stories = [s for s in stories if s.id not in used]      # never reuse the same article
     if not stories:
         log("😴 No fresh unused stories.")
         return 0
 
-    ranked = scriptwriter.rank_stories(llm, cfg, stories)
+    ranked = scriptwriter.rank_stories(llm, cfg, stories, recent=state.recent_videos())
     for s, score, angle in ranked:
         log(f"   {score:>4.1f}  {s.title[:90]}  [{s.source}, +{s.coverage}]")
 
     for story, score, angle in ranked[:4]:
-        done = state.story_kinds(story.id, story.title)
         for kind in candidate_kinds(cfg, counts, score, forced):
-            if kind in done:
-                continue
             dossier = research.build_dossier(story, kind, cfg)
             need = cfg["research"]["min_chars_long" if kind == "long" else "min_chars_short"]
             if dossier["chars"] < need:
@@ -157,9 +172,10 @@ def main(argv=None):
             from .uploader import build_service, upload_video
             vid, privacy, publish_at = upload_video(build_service(cfg["id"]), cfg, kind, video, script,
                                                     dossier["sources"], thumb)
-            state.record_upload(cfg["id"], kind, vid, script["title"], privacy)
-            state.record_story(story.id, story.title, kind, script["title"])
-            state.save()
+            if not private_test:
+                state.record_upload(cfg["id"], kind, vid, script["title"], privacy)
+                state.record_story(story.id, story.title, kind, script["title"], script.get("description", ""))
+                state.save()
             studio = f"https://studio.youtube.com/video/{vid}/edit"
             label = {"private": "PRIVATE — needs your approval", "public": "LIVE"}.get(privacy, privacy.upper())
             if publish_at:
