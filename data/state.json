@@ -18,6 +18,25 @@
    ],
    "video_title": "Jensen Huang Exits Nvidia: What It Means For India's AI Push",
    "ts": "2026-11-14T16:32:50.008336+00:00"
+  },
+  {
+   "id": "a9c17a4fe5e2",
+   "tokens": [
+    "deep",
+    "does",
+    "ecosystem",
+    "exit",
+    "huang",
+    "india",
+    "jensen",
+    "nvidia",
+    "run"
+   ],
+   "kinds": [
+    "long"
+   ],
+   "video_title": "Nvidia CEO Resigns: Why India's $5B AI Bet Faces Real Risk",
+   "ts": "2026-11-14T17:13:15.777156+00:00"
   }
  ],
  "uploads": [
@@ -28,6 +47,14 @@
    "title": "Jensen Huang Exits Nvidia: What It Means For India's AI Push",
    "privacy": "private",
    "ts": "2026-11-14T16:32:50.008283+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "long",
+   "video_id": "26GLGfYMLSc",
+   "title": "Nvidia CEO Resigns: Why India's $5B AI Bet Faces Real Risk",
+   "privacy": "public",
+   "ts": "2026-11-14T17:13:15.777109+00:00"
   }
  ],
  "pexels_used": [
@@ -41,6 +68,43 @@
   "x24255",
   "x5364",
   "x283431",
-  "x113385"
+  "x113385",
+  "x122881",
+  "x137257",
+  "x141202",
+  "x46989",
+  "x172529",
+  "x23759",
+  "x201968",
+  "x148596",
+  "x91282",
+  "x205001",
+  "x1021",
+  "x42305",
+  "x43459",
+  "x18438",
+  "x134879",
+  "x335736",
+  "x172144",
+  "x206315",
+  "x384518",
+  "x15211",
+  "x54326",
+  "x3593",
+  "x5577",
+  "x141045",
+  "x137263",
+  "x60574",
+  "x47216",
+  "x10873",
+  "x3188",
+  "x215189",
+  "x13370",
+  "x121535",
+  "x432",
+  "x11722",
+  "x45958",
+  "x23819",
+  "x203260"
  ]
 }
