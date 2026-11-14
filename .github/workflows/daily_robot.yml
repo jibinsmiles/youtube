@@ -1,40 +1,82 @@
-name: Trend Pulse Daily Robot
+name: Daily video robot
 
 on:
   schedule:
-    # Runs daily at 1:30 PM UTC (7:00 PM IST)
-    - cron: '30 13 * * *'
+    # 07:00, 10:00, 13:00, 16:00, 19:00, 22:00 India time (UTC+5:30).
+    # Each run makes at most ONE video, and only if a strong story is available
+    # and today's targets/min-gap allow it (see channels/technology.yaml).
+    - cron: "30 1,4,7,10,13,16 * * *"
   workflow_dispatch:
+    inputs:
+      kind:
+        description: "auto | short | long"
+        default: "auto"
+      dry_run:
+        description: "true = render only, do not upload (video is attached as an artifact)"
+        default: "false"
+
+permissions:
+  contents: write            # lets the job commit data/state.json back to the repo
+
+concurrency:
+  group: video-robot
+  cancel-in-progress: false
 
 jobs:
-  run-pipeline:
+  run:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 120
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.12"
+          cache: pip
 
-      - name: Install Video Rendering Tools
+      - name: System packages (ffmpeg + fonts)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-liberation imagemagick
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
 
-      - name: Install Python Requirements
-        run: |
-          pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Python packages
+        run: pip install -r requirements.txt
 
-      - name: Run Video Publisher
+      - name: Run pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          INPUT_KIND: ${{ github.event.inputs.kind }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
-          python -u youtube_daily_pipeline.py
+          KIND="${INPUT_KIND:-auto}"
+          EXTRA=""
+          if [ "$INPUT_DRY_RUN" = "true" ]; then EXTRA="--dry-run"; fi
+          python -m pipeline.main --channel technology --kind "$KIND" $EXTRA
+
+      - name: Save state (what we already covered)
+        if: always()
+        run: |
+          git config user.name  "video-robot"
+          git config user.email "video-robot@users.noreply.github.com"
+          git add data/state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update state [skip ci]"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push || true
+          fi
+
+      - name: Attach dry-run video
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dry-run-video
+          path: out/
+          retention-days: 3

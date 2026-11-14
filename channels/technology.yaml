@@ -1,0 +1,100 @@
+# ---------------------------------------------------------------------------
+# Channel: Technology (India angle).  To add another channel, copy this file,
+# change the niche/sources/style, and add its refresh-token secret.
+# ---------------------------------------------------------------------------
+id: technology
+name: Trend Pulse Daily
+niche: "Technology news and explainers with an India angle"
+audience: "Curious Indian tech enthusiasts, students and working professionals (18-40) who want to know what a tech story actually means for them"
+timezone: Asia/Kolkata
+
+style:
+  persona: "A sharp, friendly tech analyst who explains things like a smart friend: clear, specific, a little dry humour, never hypey."
+  rules:
+    - "Open with the single most surprising or consequential fact, not with context."
+    - "Prefer concrete details (what exactly changed, who is affected) over adjectives."
+    - "Always include at least one piece of original analysis: what this means, who wins or loses, or what is being overlooked."
+    - "If prices are not stated in the sources, do not guess them. Say Indian pricing has not been announced."
+    - "Keep a calm, credible tone. No hype, no fear-mongering, no insulting any company or person."
+    - "End with one specific question that invites comments. Do not beg for likes or subscribes."
+  banned_phrases:
+    - "game-changer"
+    - "game changer"
+    - "revolutionize"
+    - "in today's fast-paced"
+    - "tech world is buzzing"
+    - "major developments"
+    - "unfolding rapidly"
+    - "buckle up"
+    - "you won't believe"
+    - "mind-blowing"
+    - "stay tuned"
+    - "welcome back"
+    - "don't forget to subscribe"
+    - "smash that"
+
+schedule:
+  shorts_per_day: 3
+  long_per_day: 1
+  max_long_per_day: 2          # a 2nd long video only for an exceptional story
+  min_gap_minutes: 120         # spread uploads through the day
+  active_hours: [7, 23]        # local time window in which runs may publish
+  short_min_score: 6           # story must score at least this (1-10) to be used
+  long_min_score: 7
+  extra_long_min_score: 9
+
+formats:
+  short:
+    width: 1080
+    height: 1920
+    target: "100-125"
+    scene_words: "8-13"
+    min_words: 80
+    max_words: 145
+    captions: true
+  long:
+    width: 1920
+    height: 1080
+    target: "1100-1400"
+    scene_words: "22-38"
+    min_words: 850
+    max_words: 1700
+    captions: false            # YouTube auto-captions cover long videos
+
+research:
+  min_chars_short: 500         # not enough source text? skip rather than invent
+  min_chars_long: 3500
+
+sources:
+  feeds:
+    - {name: "The Verge",        url: "https://www.theverge.com/rss/index.xml"}
+    - {name: "TechCrunch",       url: "https://techcrunch.com/feed/"}
+    - {name: "Ars Technica",     url: "https://feeds.arstechnica.com/arstechnica/index"}
+    - {name: "Engadget",         url: "https://www.engadget.com/rss.xml"}
+    - {name: "Wired",            url: "https://www.wired.com/feed/rss"}
+    - {name: "Hacker News",      url: "https://hnrss.org/frontpage?points=150"}
+    - {name: "Inc42",            url: "https://inc42.com/feed/"}
+    - {name: "Medianama",        url: "https://www.medianama.com/feed/"}
+    - {name: "Indian Express",   url: "https://indianexpress.com/section/technology/feed/"}
+    - {name: "The Hindu",        url: "https://www.thehindu.com/sci-tech/technology/feeder/default.rss"}
+
+voice:
+  provider: edge               # edge (free) or elevenlabs (paid, more natural)
+  voices: ["en-IN-NeerjaExpressiveNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural"]
+  rate: "+4%"
+
+elevenlabs:                    # only used if provider: elevenlabs (+ ELEVENLABS_API_KEY secret)
+  voice_id: ""
+  model_id: "eleven_multilingual_v2"
+
+visuals:
+  providers: ["pixabay", "pexels"]   # tried in this order; skipped if that API key secret is not set
+  fallback_queries: ["technology", "futuristic abstract", "person using smartphone", "city night lights"]
+
+publish:
+  mode: review                 # review = upload private + ping you | veto = private, auto-publishes after veto_hours | auto = public immediately
+  veto_hours: 3
+  category_id: "28"            # Science & Technology
+  default_language: en
+  disclosure: "Script researched from the sources above. Narration is AI-generated."
+  hashtags: ["#TechNews", "#India"]
