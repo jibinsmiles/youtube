@@ -142,7 +142,7 @@ def main(argv=None):
 def _main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--channel", default="technology")
-    ap.add_argument("--kind", default="auto", choices=["auto", "short", "long"])
+    ap.add_argument("--kind", default="auto", choices=["auto", "short", "long", "alert-test"])
     ap.add_argument("--mode", default="auto", choices=["auto", "evergreen", "news"],
                     help="force evergreen or news instead of following content_mix")
     ap.add_argument("--dry-run", action="store_true", help="render but do not upload")
@@ -151,6 +151,12 @@ def _main(argv=None):
     args = ap.parse_args(argv)
 
     cfg = load_channel(args.channel)
+    if args.kind == "alert-test":
+        from .notify import send_email
+        ok = send_email(f"[Video robot] {cfg['name']}: test alert",
+                        "This is a test. If you can read this, email alerts are working.")
+        log("✅ Test email sent" if ok else "❌ Test email NOT sent - check ALERT_EMAIL_TO, SMTP_USER, SMTP_APP_PASSWORD")
+        return 0 if ok else 1
     private_test = args.visibility == "private"
     if private_test:
         cfg["publish"]["mode"] = "review"
