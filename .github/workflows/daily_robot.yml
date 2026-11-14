@@ -74,8 +74,22 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-          # Per-channel secrets (YOUTUBE_*_<CHANNEL>) are read from this blob, so no edits are needed per channel.
-          SECRETS_JSON: ${{ toJSON(secrets) }}
+          # YouTube credentials: shared ones, plus optional per-channel overrides (add a line per new channel).
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_CLIENT_ID_TECHNOLOGY: ${{ secrets.YOUTUBE_CLIENT_ID_TECHNOLOGY }}
+          YOUTUBE_CLIENT_SECRET_TECHNOLOGY: ${{ secrets.YOUTUBE_CLIENT_SECRET_TECHNOLOGY }}
+          YOUTUBE_REFRESH_TOKEN_TECHNOLOGY: ${{ secrets.YOUTUBE_REFRESH_TOKEN_TECHNOLOGY }}
+          YOUTUBE_CLIENT_ID_SCIENCE: ${{ secrets.YOUTUBE_CLIENT_ID_SCIENCE }}
+          YOUTUBE_CLIENT_SECRET_SCIENCE: ${{ secrets.YOUTUBE_CLIENT_SECRET_SCIENCE }}
+          YOUTUBE_REFRESH_TOKEN_SCIENCE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_SCIENCE }}
+          YOUTUBE_CLIENT_ID_AUTOMOTIVE: ${{ secrets.YOUTUBE_CLIENT_ID_AUTOMOTIVE }}
+          YOUTUBE_CLIENT_SECRET_AUTOMOTIVE: ${{ secrets.YOUTUBE_CLIENT_SECRET_AUTOMOTIVE }}
+          YOUTUBE_REFRESH_TOKEN_AUTOMOTIVE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_AUTOMOTIVE }}
+          YOUTUBE_CLIENT_ID_GAMING: ${{ secrets.YOUTUBE_CLIENT_ID_GAMING }}
+          YOUTUBE_CLIENT_SECRET_GAMING: ${{ secrets.YOUTUBE_CLIENT_SECRET_GAMING }}
+          YOUTUBE_REFRESH_TOKEN_GAMING: ${{ secrets.YOUTUBE_REFRESH_TOKEN_GAMING }}
           CHANNEL: ${{ matrix.channel }}
           INPUT_KIND: ${{ github.event.inputs.kind }}
           INPUT_VISIBILITY: ${{ github.event.inputs.visibility }}
