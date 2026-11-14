@@ -115,4 +115,7 @@ def find_silences(path, min_dur=1.0, threshold="-45dB"):
                         f"silencedetect=n={threshold}:d={min_dur}", "-f", "null", "-"], capture_output=True, text=True)
     starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", r.stderr)]
     durs = [float(x) for x in re.findall(r"silence_duration: ([\d.]+)", r.stderr)]
-    return list(zip(starts, durs))
+    total = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                  str(path)], capture_output=True, text=True).stdout.strip() or 0)
+    # silence that runs to the very end is the intentional closing fade, not a dropout
+    return [(a, d) for a, d in zip(starts, durs) if a + d < total - 0.3]
