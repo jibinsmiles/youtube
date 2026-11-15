@@ -101,7 +101,7 @@ def render_video(media, durations, voice_wavs, ass_path, width, height, out_path
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "scenes.txt"] + audio_in
     vfade = f"fade=t=out:st={total - fade:.3f}:d={fade:.3f}"
     vchain = (f"[0:v]ass={Path(ass_path).name},{vfade}[v]" if captions else f"[0:v]{vfade}[v]")
-    afade = f"afade=t=out:st={total - fade:.3f}:d={fade:.3f}"
+    afade = f"afade=t=out:st={total - fade:.3f}:d={fade:.3f},aresample=48000"
     pad = f"apad=pad_dur={tail:.3f}"
     # Two-pass loudness: measure first, then apply one steady gain. Single-pass loudnorm adjusts gain on the fly and
     # can start too quietly or squash words.
@@ -109,7 +109,7 @@ def render_video(media, durations, voice_wavs, ass_path, width, height, out_path
     achain = f"{_mix_chain(1, 2 if music else None, pad)};[mix]{norm},{afade}[a]"
     cmd += ["-filter_complex", f"{vchain};{achain}", "-map", "[v]", "-map", "[a]",
             "-t", f"{total:.3f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
-            "-pix_fmt", "yuv420p", "-r", str(FPS), "-c:a", "aac", "-ac", "2", "-b:a", "192k",
+            "-pix_fmt", "yuv420p", "-r", str(FPS), "-c:a", "aac", "-ar", "48000", "-ac", "2", "-b:a", "192k",
             "-movflags", "+faststart", str(Path(out_path).resolve())]
     run(cmd, cwd=workdir)
     log(f"🎬 Rendered {Path(out_path).name} ({total:.0f}s, {width}x{height})")
