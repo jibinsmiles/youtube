@@ -111,14 +111,6 @@ jobs:
           KIND="${INPUT_KIND:-auto}"
           python -m pipeline.main --channel "$CHANNEL" --kind "$KIND" --mode "${INPUT_MODE:-auto}" --visibility "${INPUT_VISIBILITY:-public}"
 
-      - name: Keep the test render for inspection (private test runs only)
-        if: always() && github.event.inputs.visibility == 'private'
-        run: |
-          ls out/*.mp4 >/dev/null 2>&1 || exit 0
-          rm -rf /tmp/dbg && mkdir /tmp/dbg && cp out/*.mp4 /tmp/dbg/
-          cd /tmp/dbg && git init -q -b debug-render && git config user.name video-robot && git config user.email video-robot@users.noreply.github.com
-          git add . && git commit -q -m "test render" && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" debug-render || true
-
       - name: Save state (what this channel already covered)
         if: always()
         env:

@@ -7,7 +7,7 @@ import os
 import shutil
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -193,6 +193,12 @@ def _main(argv=None):
             log(f"⏳ Last upload was {gap:.0f} min ago (min gap {sch['min_gap_minutes']}) — skipping.")
             return 0
 
+    blocked = state.data.get("upload_blocked_until")
+    if blocked and not private_test and not args.dry_run and datetime.fromisoformat(blocked) > datetime.now(timezone.utc):
+        log(f"⏸️ YouTube's daily upload limit was hit earlier; not rendering anything until {blocked} "
+            "(saves hours of wasted work).")
+        return 0
+
     llm = Gemini()
     share = float((cfg.get("content_mix") or {}).get("evergreen_share", 0.0))
     total = counts["short"] + counts["long"]
@@ -228,8 +234,18 @@ def _main(argv=None):
                 return 0
 
             from .uploader import build_service, upload_video
-            vid, privacy, publish_at = upload_video(build_service(cfg["id"]), cfg, kind, video, script,
-                                                    dossier["sources"], thumb)
+            try:
+                vid, privacy, publish_at = upload_video(build_service(cfg["id"]), cfg, kind, video, script,
+                                                        dossier["sources"], thumb)
+            except Exception as e:
+                if "uploadLimitExceeded" in str(e) or "exceeded the number of videos" in str(e):
+                    until = datetime.now(timezone.utc) + timedelta(hours=6)
+                    state.data["upload_blocked_until"] = until.isoformat()
+                    state.save()
+                    log(f"⏸️ YouTube refused the upload: daily upload limit reached. Pausing until {until:%H:%M} UTC.")
+                    return 0
+                raise
+            state.data.pop("upload_blocked_until", None)
             if not private_test:
                 state.record_upload(cfg["id"], kind, vid, script["title"], privacy, mode)
                 state.record_story(story.id, story.title, kind, script["title"], script.get("description", ""), mode)
