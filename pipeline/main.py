@@ -16,7 +16,7 @@ from .captions import build_ass, word_timings
 from .config import ROOT, load_channel, log
 from .llm import Gemini
 from .notify import alert, telegram
-from .render import TAIL_SECONDS, extract_frame, find_silences, measure_loudness, pick_music, render_video, snap_to_frames
+from .render import TAIL_SECONDS, extract_frame, audio_timestamp_gaps, find_silences, measure_loudness, pick_music, render_video, snap_to_frames
 from .state import State
 from .thumbnail import make_thumbnail
 from .visuals import Visuals
@@ -85,6 +85,12 @@ def produce(cfg, kind, story, dossier, script, state, workdir, out_dir, llm=None
     lufs, peak = measure_loudness(video)
     log(f"🔊 Audio loudness: {lufs} LUFS, peak {peak} dBFS (target about -16 LUFS) | "
         f"file {video.stat().st_size / 1e6:.0f} MB | total {time.time() - t0:.0f}s")
+    holes = audio_timestamp_gaps(video)
+    if holes:
+        txt = ", ".join(f"{a:.1f}s/{d:.1f}s" for a, d in holes)
+        log(f"❌ The audio track has timestamp holes ({txt}); not uploading this one")
+        alert(cfg["name"], "audio track has holes, video not uploaded", f"Holes (start/length): {txt}\nFile: {video.name}")
+        raise RuntimeError("audio track has timestamp holes")
     gaps = find_silences(video)
     if gaps:
         log("⚠️ Silent stretch(es) in the final audio (start s, length s): "

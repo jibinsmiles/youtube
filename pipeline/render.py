@@ -98,7 +98,6 @@ def render_video(media, durations, voice_wavs, ass_path, width, height, out_path
     total = sum(durations)          # durations already include the closing tail (added to the last shot)
     fade = min(0.9, max(tail - 0.2, 0.4))
     audio_in = ["-i", "voice.wav"] + (["-stream_loop", "-1", "-i", str(music)] if music else [])
-    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "scenes.txt"] + audio_in
     vfade = f"fade=t=out:st={total - fade:.3f}:d={fade:.3f}"
     vchain = (f"[0:v]ass={Path(ass_path).name},{vfade}[v]" if captions else f"[0:v]{vfade}[v]")
     afade = f"afade=t=out:st={total - fade:.3f}:d={fade:.3f},aresample=48000"
@@ -106,11 +105,16 @@ def render_video(media, durations, voice_wavs, ass_path, width, height, out_path
     # Two-pass loudness: measure first, then apply one steady gain. Single-pass loudnorm adjusts gain on the fly and
     # can start too quietly or squash words.
     norm = _loudnorm_filter(audio_in, pad, bool(music), workdir)
-    achain = f"{_mix_chain(1, 2 if music else None, pad)};[mix]{norm},{afade}[a]"
-    cmd += ["-filter_complex", f"{vchain};{achain}", "-map", "[v]", "-map", "[a]",
-            "-t", f"{total:.3f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
-            "-pix_fmt", "yuv420p", "-r", str(FPS), "-c:a", "aac", "-ar", "48000", "-ac", "2", "-b:a", "192k",
-            "-movflags", "+faststart", str(Path(out_path).resolve())]
+    # The audio is built in its own ffmpeg run and only attached afterwards. Doing it inside the same command as the
+    # video left multi-second timestamp holes in the audio track (YouTube plays those as silence, words go missing).
+    achain = f"{_mix_chain(0, 1 if music else None, pad)};[mix]{norm},{afade}[a]"
+    run(["ffmpeg", "-y", "-loglevel", "error", *audio_in, "-filter_complex", achain, "-map", "[a]",
+         "-t", f"{total:.3f}", "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2", "final_audio.wav"], cwd=workdir)
+    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "scenes.txt", "-i", "final_audio.wav",
+           "-filter_complex", vchain, "-map", "[v]", "-map", "1:a",
+           "-t", f"{total:.3f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+           "-pix_fmt", "yuv420p", "-r", str(FPS), "-c:a", "aac", "-ar", "48000", "-ac", "2", "-b:a", "192k",
+           "-movflags", "+faststart", str(Path(out_path).resolve())]
     run(cmd, cwd=workdir)
     log(f"🎬 Rendered {Path(out_path).name} ({total:.0f}s, {width}x{height})")
     return out_path
@@ -142,3 +146,21 @@ def find_silences(path, min_dur=1.0, threshold="-45dB"):
                                   str(path)], capture_output=True, text=True).stdout.strip() or 0)
     # silence that runs to the very end is the intentional closing fade, not a dropout
     return [(a, d) for a, d in zip(starts, durs) if a + d < total - 0.3]
+
+
+def audio_timestamp_gaps(path, min_gap=0.15):
+    """[(at_seconds, gap_seconds)] where the audio track's own timestamps jump forward (played back as silence)."""
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries",
+                        "packet=pts_time,duration_time", "-of", "csv=p=0", str(path)], capture_output=True, text=True)
+    gaps, prev_end = [], None
+    for line in r.stdout.split():
+        try:
+            pts, dur = (float(x) for x in line.strip(",").split(",")[:2])
+        except ValueError:
+            continue
+        if prev_end is not None and pts - prev_end > min_gap:
+            gaps.append((prev_end, pts - prev_end))
+        if dur > 0.25:                      # one packet claiming seconds of audio = a hole in the track
+            gaps.append((pts, dur))
+        prev_end = pts + min(dur, 0.05)
+    return gaps
