@@ -50,6 +50,9 @@ Audience: {cfg['audience']}
 Suggest {n} timeless topics people search for years later: "how X works", "why Y happens", "X vs Y explained",
 "what is Z and why it matters", "the history of Z". They must be accurate, concrete, interesting to this audience, and
 NOT tied to a specific news event or date.
+Prefer topics with a built-in curiosity gap that make people stop scrolling: something they use every day but
+have never understood, a surprising number or myth, "why does X do Y", "what really happens when you ...",
+"X vs Y: which is actually better". Skip dull, generic overviews ("What is technology")
 Do not repeat or closely resemble these recent videos:
 {avoid}
 

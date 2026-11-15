@@ -83,15 +83,20 @@ Include only the {top_n} best stories, best first."""
 def _spec(kind, cfg, evergreen=False):
     f = cfg["formats"][kind]
     if evergreen:
-        structure = ("HOOK (scene 1: a surprising fact or a question the viewer has always wondered about) -> the simple "
-                     "answer up front -> how it works, step by step, with one concrete example or analogy -> "
-                     "the common misconception or the surprising detail -> why it matters to the viewer -> "
-                     "a closing line that leaves one open question. Clear teaching, spoken like a good explainer."
+        structure = ("HOOK (scene 1: a surprising fact, a bold claim or a question the viewer has always wondered about; "
+                     "it must make them need the answer, and promise a payoff that comes LATER, for example 'and the "
+                     "last detail is the strangest') -> the simple answer in one line -> how it works, step by step, "
+                     "every scene adding a NEW fact or a concrete example/analogy, nothing repeated -> the common "
+                     "misconception or the surprising detail (the promised payoff) -> why it matters to the viewer -> "
+                     "a last line that echoes the opening so the video loops, plus one open question. Keep a surprise, "
+                     "a number or a twist in every scene so there is never a reason to swipe. Spoken like a great explainer."
                      if kind == "short" else
                      "COLD OPEN hook (1-2 scenes, a surprising fact or the question everyone wonders about, no greeting) -> "
-                     "the short answer -> background viewers need -> how it works, step by step, with concrete examples "
-                     "and analogies -> the common misconceptions -> a real-world example or the history -> why it "
-                     "matters -> what to explore next -> one closing question for the comments.")
+                     "the short answer -> promise what the viewer will know by the end -> background viewers need -> how it "
+                     "works, step by step, with concrete examples and analogies -> a mini-cliffhanger before each new "
+                     "section ('but here is where it gets interesting') -> the common misconceptions -> a real-world "
+                     "example or the history -> why it matters -> what to explore next -> one closing question for the "
+                     "comments. Every section must teach something new and specific; cut anything generic.")
         return (f"Total narration: {f['target']} words. Each scene: {f['scene_words']} words. "
                 f"Structure: {structure}")
     if kind == "short":
