@@ -43,7 +43,7 @@ style:
 
 schedule:
   shorts_per_day: 5
-  long_per_day: 3
+  long_per_day: 1
   max_long_per_day: 1
   min_gap_minutes: 50          # spread uploads through the day
   active_hours: [7, 23]        # local time window in which runs may publish
