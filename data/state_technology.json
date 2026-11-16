@@ -110,6 +110,31 @@
    "summary": "A deep look into the cryptographic microchips inside physical SIM cards and how embedded eUICC technology is replacing them. Learn how remote SIM provisioning operates and what hardware space savings mean for mobile devices.",
    "mode": "evergreen",
    "ts": "2026-11-16T08:34:14.104163+00:00"
+  },
+  {
+   "id": "8d39f33bda96",
+   "tokens": [
+    "apps",
+    "binding",
+    "cards",
+    "clarifies",
+    "continuous",
+    "dot",
+    "every",
+    "exclusive",
+    "hours",
+    "messaging",
+    "must",
+    "sim",
+    "verify"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "DoT Mandates 24 Hour SIM Verification for Messaging Apps",
+   "summary": "The Department of Telecommunications clarifies that messaging apps must verify SIM cards every 24 hours. We look at the technical challenges and what this means for users.",
+   "mode": "news",
+   "ts": "2026-11-16T10:21:05.478356+00:00"
   }
  ],
  "uploads": [
@@ -164,6 +189,15 @@
    "privacy": "public",
    "mode": "evergreen",
    "ts": "2026-11-16T08:34:14.104118+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "ORNDrzNnaMI",
+   "title": "DoT Mandates 24 Hour SIM Verification for Messaging Apps",
+   "privacy": "public",
+   "mode": "news",
+   "ts": "2026-11-16T10:21:05.478311+00:00"
   }
  ],
  "pexels_used": [
@@ -482,6 +516,18 @@
   "x47218",
   "x140580",
   "x214734",
-  "x142794"
+  "x142794",
+  "q8057248",
+  "q1577035",
+  "x185341",
+  "x9037",
+  "x9720",
+  "x183448",
+  "x8396",
+  "x90",
+  "x345428",
+  "x355144",
+  "q3407946",
+  "x380917"
  ]
 }
