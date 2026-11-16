@@ -135,6 +135,25 @@
    "summary": "The Department of Telecommunications clarifies that messaging apps must verify SIM cards every 24 hours. We look at the technical challenges and what this means for users.",
    "mode": "news",
    "ts": "2026-11-16T10:21:05.478356+00:00"
+  },
+  {
+   "id": "evergreen-0c42817e7e46",
+   "tokens": [
+    "battery",
+    "charging",
+    "destroying",
+    "fast",
+    "phone",
+    "without",
+    "works"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "How Fast Chargers Negotiate Power",
+   "summary": "Here is how fast charging protocols negotiate voltage with your phone to supply power efficiently while protecting lithium-ion battery health.",
+   "mode": "evergreen",
+   "ts": "2026-11-16T17:28:49.870978+00:00"
   }
  ],
  "uploads": [
@@ -198,6 +217,15 @@
    "privacy": "public",
    "mode": "news",
    "ts": "2026-11-16T10:21:05.478311+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "5HbpVyszDnY",
+   "title": "How Fast Chargers Negotiate Power",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-16T17:28:49.870935+00:00"
   }
  ],
  "pexels_used": [
@@ -528,6 +556,17 @@
   "x345428",
   "x355144",
   "q3407946",
-  "x380917"
+  "x380917",
+  "x200682",
+  "q1785522",
+  "q4199160",
+  "q3285039",
+  "q1819187",
+  "x336463",
+  "q4586771",
+  "q3381158",
+  "q5096397",
+  "q1582259",
+  "x376990"
  ]
 }
