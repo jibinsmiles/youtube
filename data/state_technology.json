@@ -74,6 +74,25 @@
    "summary": "An explainer on how satellite trilateration calculates your exact position on Earth, and why geopolitical conflicts forced India to build its own regional navigation system, NavIC.",
    "mode": "evergreen",
    "ts": "2026-11-15T07:45:23.560459+00:00"
+  },
+  {
+   "id": "evergreen-355a6ee54c73",
+   "tokens": [
+    "actually",
+    "cables",
+    "india",
+    "internet",
+    "power",
+    "undersea",
+    "work"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "How Global Internet Travels Under the Ocean",
+   "summary": "Discover how global data travels through fiber-optic cables resting on the ocean floor. Learn the history and mechanics of submarine internet cables.",
+   "mode": "evergreen",
+   "ts": "2026-11-16T02:53:11.846947+00:00"
   }
  ],
  "uploads": [
@@ -110,6 +129,15 @@
    "privacy": "public",
    "mode": "evergreen",
    "ts": "2026-11-15T07:45:23.560417+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "v5Xe_ZZduxI",
+   "title": "How Global Internet Travels Under the Ocean",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-16T02:53:11.846904+00:00"
   }
  ],
  "pexels_used": [
@@ -342,7 +370,12 @@
   "q4723841",
   "x160974",
   "x284181",
-  "x3"
- ],
- "upload_blocked_until": "2026-11-15T23:39:51.780523+00:00"
+  "x3",
+  "q4393373",
+  "q2749586",
+  "x30090",
+  "q6817925",
+  "x316",
+  "x215151"
+ ]
 }
