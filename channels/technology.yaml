@@ -45,7 +45,12 @@ schedule:
   shorts_per_day: 5
   long_per_day: 1
   max_long_per_day: 1
-  min_gap_minutes: 120         # spread uploads through the day
+  min_gap_minutes: 45          # how soon after the last upload the next video may be made
+  # Videos are uploaded whenever they are ready, but YouTube publishes each one at the next free peak slot
+  # (local time, India): commute, lunch, early-evening and prime-time for Shorts; evening for long videos.
+  go_live:
+    short: ["08:30", "12:30", "17:30", "20:30", "22:00"]
+    long: ["19:00"]
   active_hours: [7, 23]        # local time window in which runs may publish
   short_min_score: 6           # story must score at least this (1-10) to be used
   long_min_score: 7

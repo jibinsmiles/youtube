@@ -135,6 +135,25 @@ def _attempts(llm, cfg, state, counts, forced, mode):
             yield story, kind, dossier, angle
 
 
+def next_go_live(cfg, kind, state, tz, min_lead_minutes=20):
+    """Next free peak-viewership slot (UTC ISO string) for this kind, or None if no slots are configured."""
+    slots = ((cfg["schedule"].get("go_live") or {}).get(kind)) or []
+    if not slots:
+        return None
+    taken = state.pending_go_lives(cfg["id"])
+    now = datetime.now(tz)
+    for day in range(0, 8):
+        for hhmm in sorted(slots):
+            h, m = (int(x) for x in str(hhmm).split(":"))
+            t = (now + timedelta(days=day)).replace(hour=h, minute=m, second=0, microsecond=0)
+            if t <= now + timedelta(minutes=min_lead_minutes):
+                continue
+            if any(abs((t - x).total_seconds()) < 20 * 60 for x in taken):
+                continue
+            return t.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    return None
+
+
 def main(argv=None):
     try:
         return _main(argv)
@@ -234,9 +253,12 @@ def _main(argv=None):
                 return 0
 
             from .uploader import build_service, upload_video
+            go_live = None if private_test else next_go_live(cfg, kind, state, tz)
+            if go_live:
+                log(f"🕒 Scheduling it to go public at its peak-viewership slot: {go_live}")
             try:
                 vid, privacy, publish_at = upload_video(build_service(cfg["id"]), cfg, kind, video, script,
-                                                        dossier["sources"], thumb)
+                                                        dossier["sources"], thumb, go_live_at=go_live)
             except Exception as e:
                 if "uploadLimitExceeded" in str(e) or "exceeded the number of videos" in str(e):
                     until = datetime.now(timezone.utc) + timedelta(hours=6)
@@ -247,7 +269,7 @@ def _main(argv=None):
                 raise
             state.data.pop("upload_blocked_until", None)
             if not private_test:
-                state.record_upload(cfg["id"], kind, vid, script["title"], privacy, mode)
+                state.record_upload(cfg["id"], kind, vid, script["title"], privacy, mode, publish_at)
                 state.record_story(story.id, story.title, kind, script["title"], script.get("description", ""), mode)
                 state.save()
             studio = f"https://studio.youtube.com/video/{vid}/edit"

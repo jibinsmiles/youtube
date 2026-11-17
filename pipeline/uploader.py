@@ -47,7 +47,7 @@ def build_description(cfg, kind, script, sources):
     return _clean("\n\n".join(p for p in parts if p), 4900)
 
 
-def upload_video(service, cfg, kind, video_path, script, sources, thumbnail=None):
+def upload_video(service, cfg, kind, video_path, script, sources, thumbnail=None, go_live_at=None):
     """Returns (video_id, privacy, publish_at_iso_or_None)."""
     pub = cfg["publish"]
     mode = pub.get("mode", "review")
@@ -57,6 +57,10 @@ def upload_video(service, cfg, kind, video_path, script, sources, thumbnail=None
     elif mode == "veto":
         publish_at = (datetime.now(timezone.utc) + timedelta(hours=pub.get("veto_hours", 3))
                       ).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+    if go_live_at and mode == "auto":
+        # Upload now as private and let YouTube flip it to public at the chosen peak-viewership time.
+        privacy, publish_at = "private", go_live_at
 
     tags, total = [], 0
     for t in script.get("tags", []):

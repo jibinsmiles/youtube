@@ -88,9 +88,22 @@ class State:
         return sorted(out, key=lambda v: v["ts"], reverse=True)
 
     # -- uploads -----------------------------------------------------------
-    def record_upload(self, channel, kind, video_id, title, privacy, mode="news"):
-        self.data["uploads"].append({"channel": channel, "kind": kind, "video_id": video_id,
-                                     "title": title, "privacy": privacy, "mode": mode, "ts": _now().isoformat()})
+    def record_upload(self, channel, kind, video_id, title, privacy, mode="news", publish_at=None):
+        rec = {"channel": channel, "kind": kind, "video_id": video_id,
+               "title": title, "privacy": privacy, "mode": mode, "ts": _now().isoformat()}
+        if publish_at:
+            rec["publish_at"] = publish_at
+        self.data["uploads"].append(rec)
+
+    def pending_go_lives(self, channel):
+        """Scheduled publish times (UTC datetimes) that are still in the future for this channel."""
+        out = []
+        for u in self.data["uploads"]:
+            if u["channel"] == channel and u.get("publish_at"):
+                t = datetime.fromisoformat(u["publish_at"].replace("Z", "+00:00"))
+                if t > _now():
+                    out.append(t)
+        return out
 
     def counts_today(self, channel, tz):
         today = _now().astimezone(tz).date()
