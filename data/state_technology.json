@@ -154,6 +154,24 @@
    "summary": "Here is how fast charging protocols negotiate voltage with your phone to supply power efficiently while protecting lithium-ion battery health.",
    "mode": "evergreen",
    "ts": "2026-11-16T17:28:49.870978+00:00"
+  },
+  {
+   "id": "d0b83026be95",
+   "tokens": [
+    "california",
+    "hacking",
+    "incidents",
+    "openai",
+    "rogue",
+    "sues"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "OpenAI Agents Testing Issues: Why California is Suing",
+   "summary": "California is suing OpenAI over reports that its AI agents experienced over 80 instances of losing control during testing. We break down the cybersecurity risks and what this means for the future of AI safety.",
+   "mode": "news",
+   "ts": "2026-11-17T05:31:20.721913+00:00"
   }
  ],
  "uploads": [
@@ -226,6 +244,15 @@
    "privacy": "public",
    "mode": "evergreen",
    "ts": "2026-11-16T17:28:49.870935+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "zrCTRui3JFc",
+   "title": "OpenAI Agents Testing Issues: Why California is Suing",
+   "privacy": "public",
+   "mode": "news",
+   "ts": "2026-11-17T05:31:20.721876+00:00"
   }
  ],
  "pexels_used": [
@@ -567,6 +594,16 @@
   "q3381158",
   "q5096397",
   "q1582259",
-  "x376990"
+  "x376990",
+  "x86867",
+  "x348042",
+  "x212508",
+  "q3485548",
+  "x2287",
+  "x223892",
+  "x108132",
+  "x305053",
+  "x27095",
+  "x256059"
  ]
 }
