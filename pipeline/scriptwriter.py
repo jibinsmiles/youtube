@@ -96,7 +96,7 @@ def _spec(kind, cfg, evergreen=False):
                      "works, step by step, with concrete examples and analogies -> a mini-cliffhanger before each new "
                      "section ('but here is where it gets interesting') -> the common misconceptions -> a real-world "
                      "example or the history -> why it matters -> what to explore next -> one closing question for the "
-                     "comments. Every section must teach something new and specific; cut anything generic.")
+                     "comments. Every section must teach something new and specific. Do NOT stop early: the script must reach the full word count, so keep going with more sections, examples and details until it does.")
         return (f"Total narration: {f['target']} words. Each scene: {f['scene_words']} words. "
                 f"Structure: {structure}")
     if kind == "short":
@@ -231,8 +231,30 @@ def validate(script, kind, cfg):
     return problems
 
 
+def expand_script(llm, cfg, kind, script, dossier):
+    """The model often writes a long script too short. Ask it to deepen the script it already wrote."""
+    f = cfg["formats"][kind]
+    have = sum(_words(sc.get("narration", "")) for sc in script["scenes"])
+    prompt = f"""Here is a video script as JSON ({have} words of narration, far too short):
+{json.dumps(script, ensure_ascii=False)}
+
+It must reach {f['target']} words of narration in total (never below {f['min_words']}), each scene {f['scene_words']} words.
+Expand it: add more scenes and make thin scenes fuller. Every added scene must teach something NEW and specific from
+the source material below (a concrete number, an example, an analogy, a misconception, a little history, a
+"here is where it gets interesting" turn). Do not repeat points and do not pad with filler. Keep the existing hook,
+the order of the story, the tone and the closing question at the end. Keep the exact same JSON keys; every scene
+needs its narration and its own "shots" list in the same format as the existing scenes.
+
+SOURCE MATERIAL (only state facts that are supported by it):
+{dossier['text']}
+
+Return the full expanded JSON only."""
+    return normalize_scenes(llm.json(prompt, temperature=0.5, max_tokens=16000))
+
+
 def write_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
     feedback = []
+    best = None
     for attempt in range(1, MAX_ATTEMPTS + 1):
         prompt = _prompt(cfg, kind, story, dossier, angle, avoid_titles, feedback)
         script = normalize_scenes(llm.json(prompt, temperature=0.8, max_tokens=16000))
@@ -241,7 +263,22 @@ def write_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
             return script
         log(f"✍️ Script attempt {attempt} rejected: {problems}")
         feedback = problems
+        if script.get("scenes") and (best is None or _total_words(script) > _total_words(best)):
+            best = script
+    # Long scripts usually fail only because they are too short: deepen the best draft instead of starting over.
+    if kind == "long" and best:
+        for round_no in range(2):
+            best = expand_script(llm, cfg, kind, best, dossier)
+            problems = validate(best, kind, cfg)
+            if not problems:
+                log(f"✅ Expanded the draft to {_total_words(best)} words")
+                return best
+            log(f"✍️ Expansion {round_no + 1} still rejected: {problems}")
     return None
+
+
+def _total_words(script):
+    return sum(_words(sc.get("narration", "")) for sc in script.get("scenes") or [])
 
 
 # ---------------------------------------------------------------------------
