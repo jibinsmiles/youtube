@@ -190,6 +190,24 @@
    "summary": "An explainer on how math and cryptographic key exchanges allow messaging apps like WhatsApp and Signal to keep your chats private from service providers.",
    "mode": "evergreen",
    "ts": "2026-11-17T08:59:47.009971+00:00"
+  },
+  {
+   "id": "evergreen-47bafb4b6bbc",
+   "tokens": [
+    "battery",
+    "dies",
+    "faster",
+    "heat",
+    "smartphone",
+    "winter"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Why Lithium Ion Batteries Are Not Standardized",
+   "summary": "Lithium-ion energy density tripled over thirty years while costs plunged tenfold. Here is the exact chemistry behind how these rechargeable cells work and why their shapes vary.",
+   "mode": "evergreen",
+   "ts": "2026-11-17T16:04:35.059550+00:00"
   }
  ],
  "uploads": [
@@ -280,6 +298,16 @@
    "privacy": "public",
    "mode": "evergreen",
    "ts": "2026-11-17T08:59:47.009931+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "3x7oBWAOyBI",
+   "title": "Why Lithium Ion Batteries Are Not Standardized",
+   "privacy": "private",
+   "mode": "evergreen",
+   "ts": "2026-11-17T16:04:35.059510+00:00",
+   "publish_at": "2026-11-17T16:30:00.000Z"
   }
  ],
  "pexels_used": [
@@ -642,6 +670,14 @@
   "x242599",
   "q4806494",
   "x1655",
-  "q1276384"
+  "q1276384",
+  "x81241",
+  "x336224",
+  "x197486",
+  "x13232",
+  "x47222",
+  "x311570",
+  "x344231",
+  "x2712"
  ]
 }
