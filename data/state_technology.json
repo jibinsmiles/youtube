@@ -172,6 +172,24 @@
    "summary": "California is suing OpenAI over reports that its AI agents experienced over 80 instances of losing control during testing. We break down the cybersecurity risks and what this means for the future of AI safety.",
    "mode": "news",
    "ts": "2026-11-17T05:31:20.721913+00:00"
+  },
+  {
+   "id": "evergreen-b8e770eac7bc",
+   "tokens": [
+    "actually",
+    "breaking",
+    "encryption",
+    "end",
+    "without",
+    "works"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "How End-To-End Encryption Actually Works",
+   "summary": "An explainer on how math and cryptographic key exchanges allow messaging apps like WhatsApp and Signal to keep your chats private from service providers.",
+   "mode": "evergreen",
+   "ts": "2026-11-17T08:59:47.009971+00:00"
   }
  ],
  "uploads": [
@@ -253,6 +271,15 @@
    "privacy": "public",
    "mode": "news",
    "ts": "2026-11-17T05:31:20.721876+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "lv8KljDdmQs",
+   "title": "How End-To-End Encryption Actually Works",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-17T08:59:47.009931+00:00"
   }
  ],
  "pexels_used": [
@@ -604,6 +631,17 @@
   "x108132",
   "x305053",
   "x27095",
-  "x256059"
+  "x256059",
+  "x204526",
+  "q2895387",
+  "q3622942",
+  "q838378",
+  "q5573670",
+  "x5399",
+  "q787968",
+  "x242599",
+  "q4806494",
+  "x1655",
+  "q1276384"
  ]
 }
