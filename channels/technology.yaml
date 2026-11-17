@@ -51,6 +51,7 @@ schedule:
   go_live:
     short: ["08:30", "12:30", "17:30", "20:30", "22:00"]
     long: ["19:00"]
+  batch_window: [5, 9]         # IST hours: in this window one run makes the whole day's videos back to back
   active_hours: [7, 23]        # local time window in which runs may publish
   short_min_score: 6           # story must score at least this (1-10) to be used
   long_min_score: 7

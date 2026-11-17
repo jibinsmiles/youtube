@@ -154,8 +154,62 @@ def next_go_live(cfg, kind, state, tz, min_lead_minutes=20):
     return None
 
 
+_UPLOADED = []          # filled by _main with the kind of every video it uploaded in this process
+
+
+def _in_batch_window(cfg, now=None):
+    bw = (cfg.get("schedule") or {}).get("batch_window")
+    if not bw:
+        return False
+    hour = (now or datetime.now(ZoneInfo(cfg["timezone"]))).hour
+    return bw[0] <= hour < bw[1]
+
+
+def _batch(argv):
+    """Morning batch: make the whole day's videos back to back (they are scheduled to go public at peak slots).
+    Returns None when this run is not a batch run."""
+    pre = argparse.ArgumentParser(add_help=False)
+    pre.add_argument("--channel", default="technology")
+    pre.add_argument("--kind", default="auto")
+    pre.add_argument("--visibility", default=None)
+    pre.add_argument("--dry-run", action="store_true")
+    a, _ = pre.parse_known_args(argv)
+    if a.kind != "auto" or a.dry_run or a.visibility == "private":
+        return None
+    cfg = load_channel(a.channel)
+    if not _in_batch_window(cfg):
+        return None
+    sch, tz = cfg["schedule"], ZoneInfo(cfg["timezone"])
+    log(f"🌅 Morning batch window — making today's whole batch for {cfg['name']} back to back.")
+    base = list(argv or sys.argv[1:])
+    rc = 0
+    for _ in range(sch["shorts_per_day"] + sch["max_long_per_day"] + 2):
+        st = State.load(cfg["id"])
+        if st.data.get("upload_blocked_until") and datetime.fromisoformat(st.data["upload_blocked_until"]) > datetime.now(timezone.utc):
+            log("⏸️ Upload limit pause is active — batch stops here.")
+            break
+        counts = st.counts_today(cfg["id"], tz)
+        if counts["short"] < sch["shorts_per_day"]:
+            kind = "short"
+        elif counts["long"] < sch["max_long_per_day"]:
+            kind = "long"
+        else:
+            log(f"✅ Today's batch is complete: {counts['short']} shorts, {counts['long']} long.")
+            break
+        before = len(_UPLOADED)
+        log(f"🎞️ Batch: making a {kind} ({counts['short']} shorts, {counts['long']} long so far today)")
+        rc = _main(base + ["--kind", kind])
+        if len(_UPLOADED) == before:
+            log("⚠️ Nothing was uploaded for that item — stopping the batch; the next scheduled run retries.")
+            break
+    return rc
+
+
 def main(argv=None):
     try:
+        r = _batch(argv)
+        if r is not None:
+            return r
         return _main(argv)
     except SystemExit:
         raise
@@ -268,6 +322,7 @@ def _main(argv=None):
                     return 0
                 raise
             state.data.pop("upload_blocked_until", None)
+            _UPLOADED.append(kind)
             if not private_test:
                 state.record_upload(cfg["id"], kind, vid, script["title"], privacy, mode, publish_at)
                 state.record_story(story.id, story.title, kind, script["title"], script.get("description", ""), mode)

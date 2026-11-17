@@ -7,6 +7,8 @@ on:
     # Three ticks an hour at off-peak minutes: GitHub often drops or delays scheduled runs, so extra ticks make sure
     # the daily quota still gets filled. The per-channel minimum gap prevents double posting.
     - cron: "7,27,47 * * * *"
+    # Morning batch window (5-9 AM India = 23:30-03:30 UTC): extra ticks so a dropped one still leaves time to catch up
+    - cron: "*/15 23,0,1,2,3 * * *"
   workflow_dispatch:
     inputs:
       channel:
@@ -46,7 +48,7 @@ jobs:
   run:
     needs: prepare
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 340
     strategy:
       fail-fast: false                 # one channel failing never stops the others
       max-parallel: 20
