@@ -225,6 +225,98 @@
    "summary": "More megapixels on a tiny smartphone sensor can actually ruin your low-light photos. This video explains how pixel binning, image sensor formats, and computational processing work together to determine real camera quality.",
    "mode": "evergreen",
    "ts": "2026-11-17T18:55:41.727404+00:00"
+  },
+  {
+   "id": "evergreen-64a68bda58d7",
+   "tokens": [
+    "codes",
+    "damaged",
+    "even",
+    "torn",
+    "work"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Why Damaged QR Codes Still Scan Instantly",
+   "summary": "Payment QR codes still process transactions even when scratched or dirty. The secret lies in a 1960 mathematical algorithm originally built for digital data. Here is how built-in error correction keeps everyday payments working.",
+   "mode": "evergreen",
+   "ts": "2026-11-18T00:38:41.894337+00:00"
+  },
+  {
+   "id": "bf22fc83169f",
+   "tokens": [
+    "ceo",
+    "does",
+    "huang",
+    "intend",
+    "jensen",
+    "nvidia",
+    "reinstate"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Nvidia Board Rejects Jensen Huang's Return",
+   "summary": "Nvidia's board officially rejects Jensen Huang's return as CEO during Q3 earnings. We look at what the board's strict stance means for the company's future.",
+   "mode": "news",
+   "ts": "2026-11-18T00:57:03.479856+00:00"
+  },
+  {
+   "id": "evergreen-1517d683b6a4",
+   "tokens": [
+    "actually",
+    "doesn",
+    "hide",
+    "incognito",
+    "mode"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "What Incognito Mode Actually Hides",
+   "summary": "Incognito mode hides your browsing history from other people sharing your device, but it does not stop your internet service provider from seeing what you do online.",
+   "mode": "evergreen",
+   "ts": "2026-11-18T01:04:34.107055+00:00"
+  },
+  {
+   "id": "ab50b7af668b",
+   "tokens": [
+    "copilot",
+    "inside",
+    "now",
+    "office",
+    "runs",
+    "work"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Why Word and Excel Now Run Inside AI",
+   "summary": "Microsoft has integrated Word, Excel, and PowerPoint directly into Copilot, turning productivity software into plugins for autonomous agents. Here is what this new agent-first model means for workplace privacy and daily productivity.",
+   "mode": "news",
+   "ts": "2026-11-18T01:55:11.669578+00:00"
+  },
+  {
+   "id": "ff3a14412f9f",
+   "tokens": [
+    "access",
+    "blocks",
+    "china",
+    "chips",
+    "move",
+    "nvidia",
+    "remote",
+    "scandal",
+    "slams"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "US Blocks Remote AI Chip Access",
+   "summary": "The US has announced new rules to block Chinese firms from accessing advanced AI chips remotely via third-party data centres. We break down the global supply chain impact.",
+   "mode": "news",
+   "ts": "2026-11-18T02:29:13.913815+00:00"
   }
  ],
  "uploads": [
@@ -335,55 +427,59 @@
    "mode": "evergreen",
    "ts": "2026-11-17T18:55:41.727235+00:00",
    "publish_at": "2026-11-18T13:30:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "jz1XtU_oeaM",
+   "title": "Why Damaged QR Codes Still Scan Instantly",
+   "privacy": "private",
+   "mode": "evergreen",
+   "ts": "2026-11-18T00:38:41.894303+00:00",
+   "publish_at": "2026-11-18T03:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "sdxa9uVB--0",
+   "title": "Nvidia Board Rejects Jensen Huang's Return",
+   "privacy": "private",
+   "mode": "news",
+   "ts": "2026-11-18T00:57:03.479823+00:00",
+   "publish_at": "2026-11-18T07:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "ndFjegFJhaw",
+   "title": "What Incognito Mode Actually Hides",
+   "privacy": "private",
+   "mode": "evergreen",
+   "ts": "2026-11-18T01:04:34.107018+00:00",
+   "publish_at": "2026-11-18T12:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "vHx3J1TQFrE",
+   "title": "Why Word and Excel Now Run Inside AI",
+   "privacy": "private",
+   "mode": "news",
+   "ts": "2026-11-18T01:55:11.669540+00:00",
+   "publish_at": "2026-11-18T15:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "tq8r2LKkgoQ",
+   "title": "US Blocks Remote AI Chip Access",
+   "privacy": "private",
+   "mode": "news",
+   "ts": "2026-11-18T02:29:13.913776+00:00",
+   "publish_at": "2026-11-18T16:30:00.000Z"
   }
  ],
  "pexels_used": [
-  "x215189",
-  "x13370",
-  "x121535",
-  "x432",
-  "x11722",
-  "x45958",
-  "x23819",
-  "x203260",
-  "q2160321",
-  "q1863880",
-  "x202987",
-  "x378375",
-  "q499792",
-  "q1841158",
-  "q1839406",
-  "q410324",
-  "x174007",
-  "q371288",
-  "x42089",
-  "x178648",
-  "q5265414",
-  "x19314",
-  "q866100",
-  "q2049948",
-  "x365403",
-  "x207982",
-  "q3122210",
-  "x172469",
-  "x336239",
-  "q1868496",
-  "x3176",
-  "x48420",
-  "x262860",
-  "x847",
-  "q8097838",
-  "q2728117",
-  "x5361",
-  "x5088",
-  "x10822",
-  "x183853",
-  "q5537230",
-  "x325367",
-  "q2910624",
-  "x2176",
-  "q1885558",
-  "x76479",
   "q1903447",
   "q1013789",
   "q788002",
@@ -737,6 +833,52 @@
   "x134108",
   "x383282",
   "x1307",
-  "x3985"
+  "x3985",
+  "x200636",
+  "x149938",
+  "x291836",
+  "x11288",
+  "x176533",
+  "x55571",
+  "x65390",
+  "x250457",
+  "x321537",
+  "x138085",
+  "x117804",
+  "x283431",
+  "x38387",
+  "x116259",
+  "x250847",
+  "x386334",
+  "x381248",
+  "x15421",
+  "x1191",
+  "q10209984",
+  "q764507",
+  "q4884852",
+  "x311332",
+  "q838377",
+  "q4222025",
+  "q3859389",
+  "x4941",
+  "x336240",
+  "q4620559",
+  "q1311506",
+  "x375211",
+  "x43558",
+  "x43559",
+  "x365916",
+  "q1568556",
+  "x324249",
+  "x358513",
+  "x8989",
+  "x97819",
+  "q17686",
+  "q1850268",
+  "x267057",
+  "x198477",
+  "q7423121",
+  "x204306",
+  "x10822"
  ]
 }
