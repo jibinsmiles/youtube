@@ -42,15 +42,15 @@ style:
     - "smash that"
 
 schedule:
-  shorts_per_day: 5
-  long_per_day: 1
-  max_long_per_day: 1
+  shorts_per_day: 6
+  long_per_day: 2
+  max_long_per_day: 2
   min_gap_minutes: 45          # how soon after the last upload the next video may be made
   # Videos are uploaded whenever they are ready, but YouTube publishes each one at the next free peak slot
   # (local time, India): commute, lunch, early-evening and prime-time for Shorts; evening for long videos.
   go_live:
-    short: ["08:30", "12:30", "17:30", "20:30", "22:00"]
-    long: ["19:00"]
+    short: ["08:30", "12:30", "15:30", "17:30", "20:30", "22:00"]
+    long: ["11:30", "19:00"]
   batch_window: [5, 11]        # IST hours: in this window one run makes the whole day's videos back to back
   active_hours: [7, 23]        # local time window in which runs may publish
   short_min_score: 6           # story must score at least this (1-10) to be used
