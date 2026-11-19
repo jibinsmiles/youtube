@@ -1,0 +1,28 @@
+name: Scheduler
+
+# GitHub's own `schedule:` trigger is unreliable (it silently drops runs for hours). This job instead waits until
+# exact times and starts the video robot itself, then starts a fresh copy of itself before it times out.
+# The cron below only revives the chain if it ever breaks; the concurrency group keeps a single copy alive.
+on:
+  schedule:
+    - cron: "12 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: video-robot-scheduler
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for the exact times and dispatch the robot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/scheduler_loop.py

@@ -253,13 +253,14 @@ def _main(argv=None):
     manual = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
     if manual:
         log("🖐️ Manual run — skipping the active-hours and minimum-gap checks (daily caps still apply).")
+    if (not forced and not args.dry_run
+            and counts["short"] >= sch["shorts_per_day"] and counts["long"] >= sch["max_long_per_day"]):
+        log("✅ Daily targets already met.")      # also for manual/scheduler dispatches: no wasted story ranking
+        return 0
     if not forced and not manual and not args.dry_run:
         hour = datetime.now(tz).hour
         if not (sch["active_hours"][0] <= hour < sch["active_hours"][1]):
             log("🌙 Outside active hours — nothing to do.")
-            return 0
-        if counts["short"] >= sch["shorts_per_day"] and counts["long"] >= sch["max_long_per_day"]:
-            log("✅ Daily targets already met.")
             return 0
         gap = state.minutes_since_last_upload(cfg["id"])
         if gap is not None and gap < sch["min_gap_minutes"]:
