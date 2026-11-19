@@ -445,6 +445,28 @@
    "summary": "Ever wondered how your phone maintains a flawless call while traveling at highway speeds? We explain the cellular handover mechanism that switches your connection between towers without dropping a single word.",
    "mode": "evergreen",
    "ts": "2026-11-19T11:12:23.249093+00:00"
+  },
+  {
+   "id": "d01f305c400c",
+   "tokens": [
+    "biggest",
+    "game",
+    "games",
+    "goes",
+    "gta",
+    "inside",
+    "live",
+    "rockstar",
+    "video",
+    "yet"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "GTA 6 Is Finally Here: Inside The 1.5 Billion Dollar Launch",
+   "summary": "Rockstar Games has finally launched GTA VI after more than thirteen years of waiting. We break down the massive budget, development scale, and storage requirements behind the game.",
+   "mode": "news",
+   "ts": "2026-11-19T12:30:31.147333+00:00"
   }
  ],
  "uploads": [
@@ -675,12 +697,19 @@
    "mode": "evergreen",
    "ts": "2026-11-19T11:12:23.249045+00:00",
    "publish_at": "2026-11-20T06:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "oRqDM2n3E68",
+   "title": "GTA 6 Is Finally Here: Inside The 1.5 Billion Dollar Launch",
+   "privacy": "private",
+   "mode": "news",
+   "ts": "2026-11-19T12:30:31.147288+00:00",
+   "publish_at": "2026-11-20T07:00:00.000Z"
   }
  ],
  "pexels_used": [
-  "q8281982",
-  "q1283938",
-  "x30872",
   "x10847",
   "q8867083",
   "q5126125",
@@ -1077,6 +1106,9 @@
   "x1046",
   "x65640",
   "x231918",
-  "x242"
+  "x242",
+  "x37585",
+  "x166289",
+  "x256056"
  ]
 }
