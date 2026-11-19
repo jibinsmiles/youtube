@@ -164,7 +164,7 @@ SOURCE MATERIAL:
 
 Return JSON exactly like:
 {{"title": "specific, curiosity-driven, max 65 chars, no clickbait lies, no emojis, no hashtags",
-  "thumbnail_text": "max 4 words, punchy",
+  "thumbnail_text": "2-4 words that make people NEED to click, yet stay 100% true to the video: a curiosity gap, a surprising real number from the sources, a myth-vs-truth contrast or a bold question (examples of the style: 'YOUR PHONE LIES', 'WHY IT NEVER DROPS', '99% DON'T KNOW', 'NOT WHAT YOU THINK'). Never promise or imply anything the video does not deliver; no made-up numbers, no fake urgency",
   "description": "2-3 plain sentences summarising the video",
   "tags": ["8-12 relevant tags"],
   "scenes": [{{"narration": "...", "shots": ["...", "..."], "callout": "..."}}]}}"""

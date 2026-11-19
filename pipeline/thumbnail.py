@@ -1,7 +1,7 @@
 """1280x720 thumbnail with big, readable text over a darkened frame."""
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 FONTS = ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
          "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"]
@@ -19,6 +19,10 @@ def make_thumbnail(frame_png, text, badge, out_jpg):
     img = img.resize((1280, int(1280 * img.height / img.width))) if img.width != 1280 else img
     left = max((img.height - 720) // 2, 0)
     img = img.crop((0, left, 1280, left + 720))
+
+    # punchier picture: more colour and contrast so it stands out in the feed
+    img = ImageEnhance.Color(img).enhance(1.35)
+    img = ImageEnhance.Contrast(img).enhance(1.15)
 
     # darken left side for legibility
     overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
@@ -45,8 +49,14 @@ def make_thumbnail(frame_png, text, badge, out_jpg):
         size -= 8
     y = (720 - len(lines) * size * 1.1) / 2
     for i, line in enumerate(lines):
-        fill = (255, 221, 0) if i == len(lines) - 1 else (255, 255, 255)
-        draw.text((60, y + i * size * 1.1), line, font=font, fill=fill, stroke_width=6, stroke_fill=(0, 0, 0))
+        ly = y + i * size * 1.1
+        if i == len(lines) - 1:
+            # the key line sits on a bold yellow block, the classic eye-catcher
+            lw = draw.textlength(line, font=font)
+            draw.rounded_rectangle([(44, ly - 6), (76 + lw, ly + size * 1.08)], radius=14, fill=(255, 214, 0))
+            draw.text((60, ly), line, font=font, fill=(15, 15, 15))
+        else:
+            draw.text((60, ly), line, font=font, fill=(255, 255, 255), stroke_width=8, stroke_fill=(0, 0, 0))
     bf = _font(34)
     bw = draw.textlength(badge.upper(), font=bf)
     draw.rounded_rectangle([(40, 36), (40 + bw + 40, 96)], radius=12, fill=(220, 38, 38))
