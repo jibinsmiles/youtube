@@ -317,6 +317,97 @@
    "summary": "The US has announced new rules to block Chinese firms from accessing advanced AI chips remotely via third-party data centres. We break down the global supply chain impact.",
    "mode": "news",
    "ts": "2026-11-18T02:29:13.913815+00:00"
+  },
+  {
+   "id": "evergreen-223aa7aba961",
+   "tokens": [
+    "down",
+    "microwave",
+    "runs",
+    "slows"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Understanding Wi-Fi Signals and Microwave Frequencies",
+   "summary": "Wi-Fi routers commonly operate on the 2.4 GHz radio frequency band to transmit data, while microwave ovens operate within the general microwave frequency range to heat food. Here is how these distinct household technologies use wireless frequencies.",
+   "mode": "evergreen",
+   "ts": "2026-11-19T03:33:34.278456+00:00"
+  },
+  {
+   "id": "evergreen-eada16427f48",
+   "tokens": [
+    "captchas",
+    "human",
+    "mind",
+    "prove",
+    "read"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "How CAPTCHAs Try to Decide If You Are Human",
+   "summary": "Websites look at internet behavior to spot bots. Here is how modern CAPTCHA systems attempt to determine if a user is human.",
+   "mode": "evergreen",
+   "ts": "2026-11-19T03:49:41.136532+00:00"
+  },
+  {
+   "id": "72953edab313",
+   "tokens": [
+    "away",
+    "beat",
+    "day",
+    "earth",
+    "light",
+    "odds",
+    "still",
+    "voyager",
+    "working"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Voyager 1 Reaches One Light-Day From Earth",
+   "summary": "NASA's Voyager 1 spacecraft has reached a historic milestone, becoming the first human-made object to travel one light-day away from Earth using 1970s technology.",
+   "mode": "news",
+   "ts": "2026-11-19T03:56:31.518901+00:00"
+  },
+  {
+   "id": "evergreen-976eee4c4e1b",
+   "tokens": [
+    "actually",
+    "detect",
+    "finger",
+    "touchscreens"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "How Your Phone Screen Actually Detects Your Finger",
+   "summary": "An explainer on how capacitive touchscreens use an invisible electrical grid and sensors to track your finger movements without physical pressure.",
+   "mode": "evergreen",
+   "ts": "2026-11-19T04:12:17.789799+00:00"
+  },
+  {
+   "id": "a8022fb06095",
+   "tokens": [
+    "60k",
+    "asked",
+    "ceo",
+    "employees",
+    "explains",
+    "microsoft",
+    "nadella",
+    "quit",
+    "satya"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Why Microsoft Offered Buyouts to 60,000 Employees",
+   "summary": "Microsoft CEO Satya Nadella revealed why 60,000 workers were offered buyouts instead of layoffs. Here is what this workforce shift toward managing AI agents means for tech professionals.",
+   "mode": "news",
+   "ts": "2026-11-19T05:19:19.430040+00:00"
   }
  ],
  "uploads": [
@@ -477,42 +568,59 @@
    "mode": "news",
    "ts": "2026-11-18T02:29:13.913776+00:00",
    "publish_at": "2026-11-18T16:30:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "xqrJeU8eKJA",
+   "title": "Understanding Wi-Fi Signals and Microwave Frequencies",
+   "privacy": "private",
+   "mode": "evergreen",
+   "ts": "2026-11-19T03:33:34.278416+00:00",
+   "publish_at": "2026-11-19T07:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "WT1o54WA060",
+   "title": "How CAPTCHAs Try to Decide If You Are Human",
+   "privacy": "private",
+   "mode": "evergreen",
+   "ts": "2026-11-19T03:49:41.136491+00:00",
+   "publish_at": "2026-11-19T12:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "JPsndA_8Wu8",
+   "title": "Voyager 1 Reaches One Light-Day From Earth",
+   "privacy": "private",
+   "mode": "news",
+   "ts": "2026-11-19T03:56:31.518861+00:00",
+   "publish_at": "2026-11-19T15:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "NxtY5Kw3_pQ",
+   "title": "How Your Phone Screen Actually Detects Your Finger",
+   "privacy": "private",
+   "mode": "evergreen",
+   "ts": "2026-11-19T04:12:17.789763+00:00",
+   "publish_at": "2026-11-19T16:30:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "WR30IM5T3Gg",
+   "title": "Why Microsoft Offered Buyouts to 60,000 Employees",
+   "privacy": "private",
+   "mode": "news",
+   "ts": "2026-11-19T05:19:19.429973+00:00",
+   "publish_at": "2026-11-20T03:00:00.000Z"
   }
  ],
  "pexels_used": [
-  "q1903447",
-  "q1013789",
-  "q788002",
-  "q1144249",
-  "q4481399",
-  "q2478211",
-  "q1979261",
-  "x139165",
-  "q4964348",
-  "x59139",
-  "x14900",
-  "q1098059",
-  "x166289",
-  "q7001054",
-  "x3630",
-  "q8509637",
-  "x1992",
-  "q1433427",
-  "x20833",
-  "q3125379",
-  "q1264062",
-  "x23008",
-  "x344205",
-  "q695164",
-  "q5231604",
-  "q1042891",
-  "q2254769",
-  "q7146792",
-  "q1284258",
-  "x149851",
-  "q3298455",
-  "q1439125",
-  "x85824",
   "q1006668",
   "q1524870",
   "q1837238",
@@ -879,6 +987,39 @@
   "x198477",
   "q7423121",
   "x204306",
-  "x10822"
+  "x10822",
+  "x42861",
+  "q2174577",
+  "q197303",
+  "x2345",
+  "x127",
+  "q197299",
+  "x1196",
+  "x2176",
+  "q5772433",
+  "q919299",
+  "q779590",
+  "x142363",
+  "x381972",
+  "q1893429",
+  "x8577",
+  "q564811",
+  "q63014",
+  "x2320",
+  "q559641",
+  "x52742",
+  "x372471",
+  "x272519",
+  "x2338",
+  "x136268",
+  "x87307",
+  "x1112",
+  "x172529",
+  "q2415988",
+  "x2967",
+  "x226934",
+  "x178565",
+  "x136264",
+  "q2654081"
  ]
 }
