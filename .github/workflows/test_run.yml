@@ -14,7 +14,7 @@ on:
     paths: [".github/test-run.txt"]
 
 permissions:
-  contents: read
+  contents: write          # dry runs push review material (script, frames, thumbnail) to the "review" branch
 
 jobs:
   prepare:
@@ -99,6 +99,30 @@ jobs:
           EXTRA="--visibility private"
           [ "${{ matrix.item.upload }}" = "dry" ] && EXTRA="--dry-run"
           python -m pipeline.main --channel "$CHANNEL" --kind "${{ matrix.item.kind }}" --mode "${{ matrix.item.mode }}" $EXTRA
+      - name: Push review material to the "review" branch (dry runs)
+        if: always() && matrix.item.upload == 'dry'
+        env:
+          TAG: ${{ matrix.item.channel }}-${{ matrix.item.kind }}
+        run: |
+          set -e
+          ls out/*.mp4 >/dev/null 2>&1 || exit 0
+          mkdir -p /tmp/rev/$TAG
+          for v in out/*.mp4; do
+            b=$(basename "$v" .mp4)
+            ffmpeg -loglevel error -y -i "$v" -vf "fps=1/2.5,scale=-2:300,tile=8x4" -frames:v 1 /tmp/rev/$TAG/${b}_sheet.jpg || true
+            ffmpeg -loglevel error -y -ss 1 -i "$v" -frames:v 1 -vf "scale=-2:720" /tmp/rev/$TAG/${b}_frame1s.jpg || true
+            ffprobe -v error -show_entries format=duration -of csv=p=0 "$v" > /tmp/rev/$TAG/${b}_duration.txt
+          done
+          cp out/*.json out/*.jpg /tmp/rev/$TAG/ 2>/dev/null || true
+          git config user.name "video-robot"; git config user.email "video-robot@users.noreply.github.com"
+          for i in 1 2 3 4 5 6; do
+            rm -rf /tmp/rb && git clone -q --depth 1 --branch review "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" /tmp/rb 2>/dev/null \
+              || { git init -q /tmp/rb && git -C /tmp/rb checkout -q -b review && git -C /tmp/rb remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"; }
+            mkdir -p /tmp/rb/review && rm -rf /tmp/rb/review/$TAG && cp -r /tmp/rev/$TAG /tmp/rb/review/
+            git -C /tmp/rb add -A && git -C /tmp/rb -c user.name=video-robot -c user.email=video-robot@users.noreply.github.com commit -q -m "review: $TAG [skip ci]" || true
+            git -C /tmp/rb push -q origin review && break
+            sleep $((RANDOM % 10 + 3))
+          done
       - name: Keep the rendered video (dry runs)
         if: always() && matrix.item.upload == 'dry'
         uses: actions/upload-artifact@v4
