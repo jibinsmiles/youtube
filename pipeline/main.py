@@ -177,7 +177,8 @@ def _batch(argv):
     if a.kind != "auto" or a.dry_run or a.visibility == "private":
         return None
     cfg = load_channel(a.channel)
-    if not _in_batch_window(cfg):
+    # In the morning window, and for any manual/scheduler dispatch (catch-up), make everything that is still missing today.
+    if not _in_batch_window(cfg) and os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch":
         return None
     sch, tz = cfg["schedule"], ZoneInfo(cfg["timezone"])
     log(f"🌅 Morning batch window — making today's whole batch for {cfg['name']} back to back.")
