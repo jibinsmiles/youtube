@@ -1,0 +1,109 @@
+{
+ "script": {
+  "title": "The History of the Henry Fingerprint Classification System",
+  "thumbnail_text": "1,024 PIGEONHOLES",
+  "description": "In late 19th-century Bengal, an administrative and mathematical method was developed to index fingerprints. This system contributed to the transition away from body measurements in forensic science. Here is the background of the system involving Qazi Azizul Haque, Hem Chandra Bose, and Edward Henry.",
+  "tags": [
+   "forensic history",
+   "fingerprint classification",
+   "true crime india",
+   "kaala panna",
+   "indian history",
+   "qazi azizul haque",
+   "hem chandra bose",
+   "henry classification system",
+   "history mystery",
+   "forensic science"
+  ],
+  "scenes": [
+   {
+    "narration": "A classification method once assisted in organizing fingerprint records.",
+    "shots": [
+     "vintage fingerprint document",
+     "magnifying glass paper"
+    ],
+    "callout": "FINGERPRINT METHOD",
+    "visual_query": "vintage fingerprint document"
+   },
+   {
+    "narration": "In 1890s Bengal, investigators used body measurements to track offenders.",
+    "shots": [
+     "old indian street",
+     "vintage measuring tape"
+    ],
+    "callout": "1890S BENGAL",
+    "visual_query": "old indian street"
+   },
+   {
+    "narration": "Inspector General Edward Henry ordered fingerprint collection alongside body measurements in 1896.",
+    "shots": [
+     "sepia colonial office",
+     "ink stamp pad"
+    ],
+    "callout": "1896",
+    "visual_query": "sepia colonial office"
+   },
+   {
+    "narration": "Fingerprint records were gathered, creating a need for a structured sorting method.",
+    "shots": [
+     "filing cabinet drawers",
+     "stacked archival paper"
+    ],
+    "callout": "RECORD COLLECTION",
+    "visual_query": "filing cabinet drawers"
+   },
+   {
+    "narration": "Indian officer Qazi Azizul Haque devised a mathematical formula using 1,024 pigeonholes.",
+    "shots": [
+     "wooden pigeonhole desk",
+     "handwriting calculation notes"
+    ],
+    "callout": "1,024 PIGEONHOLES",
+    "visual_query": "wooden pigeonhole desk"
+   },
+   {
+    "narration": "Scholar Hem Chandra Bose refined the method with detailed fingerprint sub-classifications.",
+    "shots": [
+     "microscope slide examination",
+     "fingerprint pattern chart"
+    ],
+    "callout": "HEM CHANDRA BOSE",
+    "visual_query": "microscope slide examination"
+   },
+   {
+    "narration": "An 1897 official committee evaluated fingerprinting, leading to changes in identification methods.",
+    "shots": [
+     "historic courtroom table",
+     "official seal stamping"
+    ],
+    "callout": "1897 COMMITTEE",
+    "visual_query": "historic courtroom table"
+   },
+   {
+    "narration": "The contributors received British government recognition years later for their work.",
+    "shots": [
+     "old medal box",
+     "archival ledger book"
+    ],
+    "callout": "YEARS LATER",
+    "visual_query": "old medal box"
+   },
+   {
+    "narration": "This classification system influenced forensics—how do you view this history?",
+    "shots": [
+     "modern police database",
+     "fingerprint scanner beam"
+    ],
+    "callout": "INFLUENCED FORENSICS",
+    "visual_query": "modern police database"
+   }
+  ]
+ },
+ "sources": [
+  {
+   "title": "Henry Classification System",
+   "url": "https://en.wikipedia.org/wiki/Henry_Classification_System",
+   "source": "Wikipedia"
+  }
+ ]
+}
