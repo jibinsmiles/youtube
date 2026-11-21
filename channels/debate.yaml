@@ -87,3 +87,6 @@ fact_check_notes:
 formats:
   long:
     expand_rounds: 4           # free "lite" models write long scripts short; give them more rounds to deepen the draft
+
+research:
+  fact_check_rounds: 3         # check, repair, check, repair, check: unsupported lines are cut, never kept

@@ -376,13 +376,14 @@ def verified_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
     script = write_script(llm, cfg, kind, story, dossier, angle, avoid_titles)
     if not script:
         return None
-    for round_no in range(2):
+    rounds = int((cfg.get("research") or {}).get("fact_check_rounds", 2))     # checks; repairs = rounds - 1
+    for round_no in range(rounds):
         unsupported = fact_check(llm, script, dossier, cfg)
         if not unsupported:
             log("✅ Fact-check passed")
             return script
         log(f"🔍 Fact-check found {len(unsupported)} unsupported claim(s): {unsupported[:3]}")
-        if round_no == 1:
+        if round_no == rounds - 1:
             break
         script = repair_script(llm, script, unsupported)
         if validate(script, kind, cfg):
