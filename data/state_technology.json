@@ -467,6 +467,113 @@
    "summary": "Rockstar Games has finally launched GTA VI after more than thirteen years of waiting. We break down the massive budget, development scale, and storage requirements behind the game.",
    "mode": "news",
    "ts": "2026-11-19T12:30:31.147333+00:00"
+  },
+  {
+   "id": "evergreen-8693dd0e3367",
+   "tokens": [
+    "airplane",
+    "during",
+    "flights",
+    "mode",
+    "must",
+    "phones",
+    "put"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Why Phones Are Banned on Planes",
+   "summary": "Here is why cell phones operating at high altitude can disrupt ground networks and avionics, and how airlines manage in-flight signals.",
+   "mode": "evergreen",
+   "ts": "2026-11-21T12:48:14.058773+00:00"
+  },
+  {
+   "id": "evergreen-04cfffa6b124",
+   "tokens": [
+    "actually",
+    "don",
+    "know",
+    "password",
+    "websites"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "How Websites Verify Your Password Without Seeing It",
+   "summary": "An explainer on how cryptographic hashing and salting let servers check your login without storing your actual plain-text password.",
+   "mode": "evergreen",
+   "ts": "2026-11-21T12:56:30.190053+00:00"
+  },
+  {
+   "id": "839edfdded9a",
+   "tokens": [
+    "agents",
+    "block",
+    "messages",
+    "reading",
+    "restricts",
+    "screenshots",
+    "signal"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Signal Blocks Screenshots to Stop AI Agents",
+   "summary": "Signal is restricting screenshots to stop AI agents from reading private chats. We look at what this means for secure communication.",
+   "mode": "news",
+   "ts": "2026-11-21T13:04:15.392413+00:00"
+  },
+  {
+   "id": "evergreen-a04f80a0687e",
+   "tokens": [
+    "bought",
+    "matches",
+    "never",
+    "phone",
+    "storage"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Understanding Digital Storage Calculations",
+   "summary": "An explainer on the hidden math behind digital storage definitions, operating system calculations, and why your device shows less free space than advertised.",
+   "mode": "evergreen",
+   "ts": "2026-11-21T13:15:07.516007+00:00"
+  },
+  {
+   "id": "evergreen-1e7cff738576",
+   "tokens": [
+    "buffer",
+    "india",
+    "netflix",
+    "never",
+    "youtube"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "How Video Streaming Actually Reaches Your Screen",
+   "summary": "Discover how proxy servers and content delivery networks operate within internet infrastructure to deliver videos.",
+   "mode": "evergreen",
+   "ts": "2026-11-21T13:29:09.949036+00:00"
+  },
+  {
+   "id": "evergreen-f1b8106c326a",
+   "tokens": [
+    "actually",
+    "computer",
+    "delete",
+    "happens",
+    "hit",
+    "inside"
+   ],
+   "kinds": [
+    "short"
+   ],
+   "video_title": "Why Your Recycle Bin Lies to You",
+   "summary": "Discover how the operating system recycle bin works and why deleted files remain recoverable on storage drives.",
+   "mode": "evergreen",
+   "ts": "2026-11-21T13:48:18.691605+00:00"
   }
  ],
  "uploads": [
@@ -707,69 +814,63 @@
    "mode": "news",
    "ts": "2026-11-19T12:30:31.147288+00:00",
    "publish_at": "2026-11-20T07:00:00.000Z"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "gkDeSJMH-ZY",
+   "title": "Why Phones Are Banned on Planes",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-21T12:48:14.058724+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "gfBcakJTDC8",
+   "title": "How Websites Verify Your Password Without Seeing It",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-21T12:56:30.190012+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "l4AVuTgb410",
+   "title": "Signal Blocks Screenshots to Stop AI Agents",
+   "privacy": "public",
+   "mode": "news",
+   "ts": "2026-11-21T13:04:15.392377+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "CuQsMEx1Fkg",
+   "title": "Understanding Digital Storage Calculations",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-21T13:15:07.515969+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "xn5bQ4ZP2xI",
+   "title": "How Video Streaming Actually Reaches Your Screen",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-21T13:29:09.948996+00:00"
+  },
+  {
+   "channel": "technology",
+   "kind": "short",
+   "video_id": "JQ0sOEukFKU",
+   "title": "Why Your Recycle Bin Lies to You",
+   "privacy": "public",
+   "mode": "evergreen",
+   "ts": "2026-11-21T13:48:18.691570+00:00"
   }
  ],
  "pexels_used": [
-  "x10847",
-  "q8867083",
-  "q5126125",
-  "q1038540",
-  "q921458",
-  "q889639",
-  "q2910920",
-  "q1903997",
-  "q4646854",
-  "q4475680",
-  "x204527",
-  "q4927935",
-  "q2510529",
-  "q1853305",
-  "q8118380",
-  "q1853262",
-  "q431230",
-  "x129855",
-  "q5417261",
-  "q71169",
-  "x1625",
-  "q90389",
-  "q6609432",
-  "x3641",
-  "q7641877",
-  "x47218",
-  "x140580",
-  "x214734",
-  "x142794",
-  "q8057248",
-  "q1577035",
-  "x185341",
-  "x9037",
-  "x9720",
-  "x183448",
-  "x8396",
-  "x90",
-  "x345428",
-  "x355144",
-  "q3407946",
-  "x380917",
-  "x200682",
-  "q1785522",
-  "q4199160",
-  "q3285039",
-  "q1819187",
-  "x336463",
-  "q4586771",
-  "q3381158",
-  "q5096397",
-  "q1582259",
-  "x376990",
-  "x86867",
-  "x348042",
-  "x212508",
-  "q3485548",
-  "x2287",
-  "x223892",
-  "x108132",
-  "x305053",
   "x27095",
   "x256059",
   "x204526",
@@ -1109,6 +1210,66 @@
   "x242",
   "x37585",
   "x166289",
-  "x256056"
+  "x256056",
+  "q883065",
+  "q61754",
+  "q21457",
+  "q2559913",
+  "q1846023",
+  "x47215",
+  "q4393373",
+  "q8664667",
+  "q1160262",
+  "q6867678",
+  "q599486",
+  "x186520",
+  "x991",
+  "x38084",
+  "x203260",
+  "q1734494",
+  "x108813",
+  "x3160",
+  "q1032730",
+  "x49470",
+  "x171",
+  "x380332",
+  "x262696",
+  "x202987",
+  "x9490",
+  "x377176",
+  "x384501",
+  "x3145",
+  "x5364",
+  "x268230",
+  "x296958",
+  "x83870",
+  "x277096",
+  "x318322",
+  "x47802",
+  "x5440",
+  "x19179",
+  "x365154",
+  "x5365",
+  "x4001",
+  "q2505345",
+  "q4259595",
+  "x372822",
+  "x254922",
+  "q630169",
+  "x362312",
+  "x14906",
+  "q2100147",
+  "x197208",
+  "x14907",
+  "x45956",
+  "q2749586",
+  "q2784908",
+  "x154384",
+  "x86255",
+  "x336232",
+  "q4835965",
+  "x23355",
+  "x378976",
+  "x12794"
  ]
 }
