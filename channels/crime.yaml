@@ -80,3 +80,14 @@ publish:
   expected_channel: "Kaala Panna"
   disclosure: "Researched from the sources above (documented, closed or historical cases only). Theories are labelled as theories. Narration is AI-generated."
   hashtags: ["#TrueCrime", "#Mystery", "#History"]
+
+llm:
+  lite_for_visuals: true       # footage checks use the "lite" Gemini models; the scarce full models write the scripts
+
+fact_check_notes:
+  - "Numbers written out in words for the narrator ('two thousand one', 'ten crore') mean the same as digits; never flag how a number, name or title is spelled or formatted."
+  - "Do not flag the narrator's framing, analogies or clearly hypothetical examples as long as they add no new factual claim."
+
+formats:
+  long:
+    expand_rounds: 4           # free "lite" models write long scripts short; give them more rounds to deepen the draft

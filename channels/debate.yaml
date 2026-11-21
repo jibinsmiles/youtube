@@ -76,3 +76,14 @@ publish:
   expected_channel: "Bahas Tadka"
   disclosure: "Both sides are presented from the sources above; a verdict is given only where the evidence is clear. Narration is AI-generated."
   hashtags: ["#Debate", "#BothSides", "#MythVsFact"]
+
+llm:
+  lite_for_visuals: true       # footage checks use the "lite" Gemini models; the scarce full models write the scripts
+
+fact_check_notes:
+  - "Numbers written out in words for the narrator ('two thousand one', 'ten crore') mean the same as digits; never flag how a number, name or title is spelled or formatted."
+  - "Do not flag the narrator's framing, analogies or clearly hypothetical examples as long as they add no new factual claim."
+
+formats:
+  long:
+    expand_rounds: 4           # free "lite" models write long scripts short; give them more rounds to deepen the draft

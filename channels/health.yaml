@@ -20,7 +20,7 @@ style:
     - "End with one specific question that invites comments. Do not beg for likes or subscribes."
   thumbnail_rules:
     - "no cure claims, no body-shaming, no scary medical images or words"
-    - "myth-vs-fact contrasts are ideal ('MYTH OR FACT?', 'NOT WHAT YOUR MOM SAID')"
+    - "a myth-vs-fact contrast taken from the video itself is ideal (style: 'MYTH OR FACT?', 'RICE AT NIGHT?')"
   required_phrases: ["not medical advice"]
   banned_phrases: ["game-changer", "revolutionize", "you won't believe", "mind-blowing", "stay tuned", "welcome back",
                    "furthermore", "moreover", "delve", "in conclusion", "it is worth noting", "don't forget to subscribe",
@@ -86,3 +86,14 @@ publish:
   expected_channel: "Sehat Tadka"
   disclosure: "Educational content only, not medical advice. Talk to a qualified doctor about your own health. Researched from the sources above. Narration is AI-generated."
   hashtags: ["#Health", "#Fitness", "#MythVsFact"]
+
+llm:
+  lite_for_visuals: true       # footage checks use the "lite" Gemini models; the scarce full models write the scripts
+
+fact_check_notes:
+  - "Numbers written out in words for the narrator ('two thousand one', 'ten crore') mean the same as digits; never flag how a number, name or title is spelled or formatted."
+  - "Do not flag the narrator's framing, analogies or clearly hypothetical examples as long as they add no new factual claim."
+
+formats:
+  long:
+    expand_rounds: 4           # free "lite" models write long scripts short; give them more rounds to deepen the draft

@@ -271,11 +271,16 @@ the source material below (a concrete number, an example, an analogy, a misconce
 the order of the story, the tone and the closing question at the end. Keep the exact same JSON keys; every scene
 needs its narration and its own "shots" list in the same format as the existing scenes.
 
-SOURCE MATERIAL (only state facts that are supported by it):
+{_keep_lines(cfg)}SOURCE MATERIAL (only state facts that are supported by it):
 {dossier['text']}
 
 Return the full expanded JSON only."""
     return normalize_scenes(llm.json(prompt, temperature=0.5, max_tokens=16000))
+
+
+def _keep_lines(cfg):
+    req = (cfg.get("style") or {}).get("required_phrases") or []
+    return ("The last scene must keep these exact words: " + "; ".join(f'"{r}"' for r in req) + "\n\n") if req else ""
 
 
 def write_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
@@ -293,7 +298,7 @@ def write_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
             best = script
     # Long scripts usually fail only because they are too short: deepen the best draft instead of starting over.
     if kind == "long" and best:
-        for round_no in range(2):
+        for round_no in range(int(cfg["formats"][kind].get("expand_rounds", 2))):
             best = expand_script(llm, cfg, kind, best, dossier)
             problems = validate(best, kind, cfg)
             if not problems:
@@ -336,7 +341,7 @@ A statement about what the source material itself does or does not mention (for 
 say when it reaches India") is acceptable if it is true. A claim that something has NOT been announced, is
 unavailable or does not exist, when the sources are silent on it, IS unsupported.
 
-{_compliance_block(cfg)}
+{_extra_rules((cfg or {}).get("fact_check_notes"), "Notes for this check")}{_compliance_block(cfg)}
 Return JSON: {{"unsupported": [{{"claim": "...", "reason": "..."}}]}}  (empty list if everything is supported)"""
     data = llm.json(prompt, temperature=0.0, max_tokens=2048)
     return data.get("unsupported", [])

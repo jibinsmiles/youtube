@@ -261,7 +261,8 @@ class Visuals:
             parts += shot_parts
         parts.append({"text": 'Return JSON: {"picks": [{"shot": 1, "choice": "B"}, {"shot": 2, "choice": "none"}]}'})
         try:
-            data = llm.generate("", json_mode=True, temperature=0.0, max_tokens=2048, parts=parts)
+            data = llm.generate("", json_mode=True, temperature=0.0, max_tokens=2048, parts=parts,
+                                lite_first=bool((self.cfg.get("llm") or {}).get("lite_for_visuals")))
         except Exception as e:
             log(f"⚠️ Visual check unavailable ({type(e).__name__}: {str(e)[:120]}); using tag matching instead")
             return None

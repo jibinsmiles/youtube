@@ -79,8 +79,9 @@ class Gemini:
         return json.loads(text[start:end + 1])
 
     # -- public API --------------------------------------------------------
-    def generate(self, prompt, json_mode=True, temperature=0.7, max_tokens=8192, parts=None):
-        """`parts` (optional) replaces the plain prompt with a list of {"text": ...} / {"inline_data": ...} parts."""
+    def generate(self, prompt, json_mode=True, temperature=0.7, max_tokens=8192, parts=None, lite_first=False):
+        """`parts` (optional) replaces the plain prompt with a list of {"text": ...} / {"inline_data": ...} parts.
+        lite_first: try the "lite" models first (for simple jobs), keeping the scarce full models for writing."""
         payload = {
             "contents": [{"role": "user", "parts": parts or [{"text": prompt}]}],
             "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
@@ -90,7 +91,8 @@ class Gemini:
 
         last = "no models tried"
         for round_no in (0, 1):
-            for model in list(self.models):
+            order = sorted(self.models, key=lambda m: "lite" not in m) if lite_first else list(self.models)
+            for model in order:
                 if model in self._spent:
                     continue
                 for retry in range(3):
