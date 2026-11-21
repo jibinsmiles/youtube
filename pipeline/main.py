@@ -309,7 +309,7 @@ def _main(argv=None):
                 return 0
 
             from .uploader import build_service, upload_video
-            go_live = None if private_test else next_go_live(cfg, kind, state, tz)
+            go_live = None if (private_test or os.environ.get("PUBLISH_NOW") == "true") else next_go_live(cfg, kind, state, tz)
             if go_live:
                 log(f"🕒 Scheduling it to go public at its peak-viewership slot: {go_live}")
             try:
