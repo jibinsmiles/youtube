@@ -1,0 +1,107 @@
+{
+ "script": {
+  "title": "Analyzing Walking Speed and Health Outcomes",
+  "thumbnail_text": "WALKING SPEED",
+  "description": "We examine walking speed data and what the scientific research actually says about health outcomes.",
+  "tags": [
+   "walking",
+   "fitness myths",
+   "step count",
+   "health science",
+   "exercise",
+   "daily steps",
+   "wellness",
+   "fitness goals"
+  ],
+  "scenes": [
+   {
+    "narration": "What does the scientific data actually say about walking speed and health outcomes?",
+    "shots": [
+     "person checking fitness tracker",
+     "pedestrian walking on sidewalk"
+    ],
+    "callout": "",
+    "visual_query": "person checking fitness tracker"
+   },
+   {
+    "narration": "People discuss walking habits and various exercise targets.",
+    "shots": [
+     "smartwatch screen display",
+     "close up of pedometer"
+    ],
+    "callout": "EXERCISE TARGETS",
+    "visual_query": "smartwatch screen display"
+   },
+   {
+    "narration": "Supporters argue walking is a low impact exercise with possible health benefits.",
+    "shots": [
+     "people walking in park",
+     "elderly person walking outdoors"
+    ],
+    "callout": "LOW IMPACT",
+    "visual_query": "people walking in park"
+   },
+   {
+    "narration": "Limited research indicates walking is associated with reduced risk of premature death.",
+    "shots": [
+     "person walking on trail",
+     "legs walking on pavement"
+    ],
+    "callout": "",
+    "visual_query": "person walking on trail"
+   },
+   {
+    "narration": "Research notes different metrics related to walking and movement.",
+    "shots": [
+     "vintage pedometer device",
+     "old Japanese advertisement"
+    ],
+    "callout": "WALKING METRICS",
+    "visual_query": "vintage pedometer device"
+   },
+   {
+    "narration": "The report notes walking speed varies widely by age, terrain, and fitness.",
+    "shots": [
+     "pedestrians crossing street",
+     "people walking at different speeds"
+    ],
+    "callout": "SPEED VARIES",
+    "visual_query": "pedestrians crossing street"
+   },
+   {
+    "narration": "The evidence shows walking supports general health.",
+    "shots": [
+     "medical research data",
+     "person walking stairs"
+    ],
+    "callout": "GENERAL HEALTH",
+    "visual_query": "medical research data"
+   },
+   {
+    "narration": "Which side are you on?",
+    "shots": [
+     "person looking at phone",
+     "busy city sidewalk"
+    ],
+    "callout": "YOUR SIDE",
+    "visual_query": "person looking at phone"
+   },
+   {
+    "narration": "What does the scientific data actually say about walking speed and health outcomes?",
+    "shots": [
+     "fitness tracker on wrist",
+     "walking shoes on ground"
+    ],
+    "callout": "THE DATA",
+    "visual_query": "fitness tracker on wrist"
+   }
+  ]
+ },
+ "sources": [
+  {
+   "title": "Walking",
+   "url": "https://en.wikipedia.org/wiki/Walking",
+   "source": "Wikipedia"
+  }
+ ]
+}
