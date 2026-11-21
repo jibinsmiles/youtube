@@ -1,0 +1,112 @@
+{
+ "script": {
+  "title": "How Credit Scoring Works",
+  "thumbnail_text": "NOT JUST BANKS",
+  "description": "Learn how credit bureaus collect data to build your credit score and determine interest rates. Discover why lenders, landlords, and employers look at your payment records.",
+  "tags": [
+   "credit score",
+   "credit bureau",
+   "personal finance",
+   "loans",
+   "interest rates",
+   "risk based pricing",
+   "financial literacy",
+   "paisa tadka"
+  ],
+  "scenes": [
+   {
+    "narration": "Why do banks charge different interest rates, and who checks your record last?",
+    "shots": [
+     "bank building exterior",
+     "hand holding loan documents"
+    ],
+    "callout": "DIFFERENT INTEREST RATES",
+    "visual_query": "bank building exterior"
+   },
+   {
+    "narration": "Credit bureaus collect your bill payment history to build a numerical credit score.",
+    "shots": [
+     "person filling financial form",
+     "digital report on laptop"
+    ],
+    "callout": "NUMERICAL CREDIT SCORE",
+    "visual_query": "person filling financial form"
+   },
+   {
+    "narration": "Lenders use this score to evaluate risk and set your specific credit limit.",
+    "shots": [
+     "bank manager review documents",
+     "calculator on wooden desk"
+    ],
+    "callout": "EVALUATE RISK",
+    "visual_query": "bank manager review documents"
+   },
+   {
+    "narration": "Higher risk borrowers with poor payment histories get hit with higher interest rates.",
+    "shots": [
+     "worried person reading bills",
+     "red interest rate chart"
+    ],
+    "callout": "HIGHER INTEREST RATES",
+    "visual_query": "worried person reading bills"
+   },
+   {
+    "narration": "Cell phone companies, landlords, and insurance firms also check this score to screen you.",
+    "shots": [
+     "apartment key delivery",
+     "mobile phone store desk"
+    ],
+    "callout": "LANDLORDS AND INSURANCE",
+    "visual_query": "apartment key delivery"
+   },
+   {
+    "narration": "Digital finance companies even use alternative data sources to calculate your loan creditworthiness.",
+    "shots": [
+     "smartphone online payment screen",
+     "data server rack LED lights"
+    ],
+    "callout": "ALTERNATIVE DATA SOURCES",
+    "visual_query": "smartphone online payment screen"
+   },
+   {
+    "narration": "Even employers sometimes review your credit records when screening candidates for new jobs.",
+    "shots": [
+     "job interview handshake",
+     "resume on office desk"
+    ],
+    "callout": "EMPLOYMENT SCREENING",
+    "visual_query": "job interview handshake"
+   },
+   {
+    "narration": "Paying bills on time provides a strong incentive and reduces bank credit monopoly.",
+    "shots": [
+     "calendar reminder checkmark",
+     "person using banking app"
+    ],
+    "callout": "REDUCES CREDIT MONOPOLY",
+    "visual_query": "calendar reminder checkmark"
+   },
+   {
+    "narration": "This is education, not financial advice. Do you know your current credit score?",
+    "shots": [
+     "person looking at phone screen",
+     "thoughtful person sitting"
+    ],
+    "callout": "EDUCATION NOT ADVICE",
+    "visual_query": "person looking at phone screen"
+   }
+  ]
+ },
+ "sources": [
+  {
+   "title": "Credit score",
+   "url": "https://en.wikipedia.org/wiki/Credit_score",
+   "source": "Wikipedia"
+  },
+  {
+   "title": "Credit bureau",
+   "url": "https://en.wikipedia.org/wiki/Credit_bureau",
+   "source": "Wikipedia"
+  }
+ ]
+}
