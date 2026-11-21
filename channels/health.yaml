@@ -110,6 +110,7 @@ repair_notes:
   - "Scene 1 must stay a gripping, specific hook; if its claim was unsupported, open with the most surprising supported fact instead."
   - "Keep the title and thumbnail text specific and intriguing using only supported facts; never turn them into a textbook heading."
   - "Keep about the same length, the structure, the promised payoff, the looping last line and any required disclaimer line."
+  - "If you remove a claim, also change the title, thumbnail text and description so they no longer promise it."
 
 quality_gate:
   min_score: 6                 # an editor pass scores hook, specificity, payoff and packaging; below 6 = try another topic

@@ -404,7 +404,8 @@ Score 1-10 each:
 - hook: does scene 1 state a specific, surprising, concrete fact or sharp question that makes people stay? Vague or generic openers ("How does your body work?", "A method once helped") score 1-3.
 - specificity: does EVERY scene give a concrete new fact (a name, number, date, mechanism, example)? Filler lines ("processes remain active", "this is an important topic") pull the score down hard.
 - payoff: is something promised early and delivered later, and does the last line loop back to the opening?
-- packaging: are the title and thumbnail text specific and intriguing (not a textbook heading) yet true to the script?
+- packaging: are the title and thumbnail text specific and intriguing (not a textbook heading), and does the script
+  actually deliver what they promise? A title or thumbnail about something the script never explains scores 1.
 Return JSON: {{"hook": 0, "specificity": 0, "payoff": 0, "packaging": 0, "worst_lines": ["..."]}}"""
     try:
         d = llm.json(prompt, temperature=0.0, max_tokens=1024)
