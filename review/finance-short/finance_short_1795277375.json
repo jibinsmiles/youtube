@@ -1,0 +1,113 @@
+{
+ "script": {
+  "title": "How UPI Payments Actually Work Behind the Scenes",
+  "thumbnail_text": "WHERE PAYMENTS DELAY",
+  "description": "Learn how UPI transfers money between bank accounts in seconds using NPCI infrastructure. Understand the technical role of IMPS, RBI regulation, and how to stay safe during digital transfers.",
+  "tags": [
+   "UPI explained",
+   "How UPI works",
+   "NPCI India",
+   "IMPS payments",
+   "digital payments India",
+   "RBI regulations",
+   "UPI safety tips",
+   "Paisa Tadka",
+   "personal finance India"
+  ],
+  "scenes": [
+   {
+    "narration": "UPI handles seven thousand payments every second; one central system routes them.",
+    "shots": [
+     "digital payment scan",
+     "server room flashing lights"
+    ],
+    "callout": "",
+    "visual_query": "digital payment scan"
+   },
+   {
+    "narration": "Unified Payments Interface is an instant payment protocol created by NPCI in twenty sixteen.",
+    "shots": [
+     "person using smartphone",
+     "bank building exterior"
+    ],
+    "callout": "",
+    "visual_query": "person using smartphone"
+   },
+   {
+    "narration": "Say you transfer one hundred rupees using a unique UPI ID on your phone.",
+    "shots": [
+     "rupee cash notes",
+     "scanning qr code street"
+    ],
+    "callout": "",
+    "visual_query": "rupee cash notes"
+   },
+   {
+    "narration": "It runs as an open source application programming interface on top of IMPS.",
+    "shots": [
+     "computer screen code",
+     "data transfer graphics"
+    ],
+    "callout": "IMPS INFRASTRUCTURE",
+    "visual_query": "computer screen code"
+   },
+   {
+    "narration": "NPCI acts as a central switch, instantly matching sender and receiver bank servers.",
+    "shots": [
+     "network switch cables",
+     "digital network diagram"
+    ],
+    "callout": "CENTRAL SWITCH",
+    "visual_query": "network switch cables"
+   },
+   {
+    "narration": "UPI processes an average of nearly seven thousand five hundred transactions every second.",
+    "shots": [
+     "loading icon smartphone",
+     "frustrated person phone"
+    ],
+    "callout": "",
+    "visual_query": "loading icon smartphone"
+   },
+   {
+    "narration": "It is used on mobile devices to instantly transfer funds between two bank accounts.",
+    "shots": [
+     "checking phone screen",
+     "finger tapping screen"
+    ],
+    "callout": "INSTANT TRANSFER",
+    "visual_query": "checking phone screen"
+   },
+   {
+    "narration": "The system is regulated by RBI. This is education, not financial advice.",
+    "shots": [
+     "reserve bank building",
+     "financial document review"
+    ],
+    "callout": "RBI REGULATED",
+    "visual_query": "reserve bank building"
+   },
+   {
+    "narration": "Seven thousand transactions happen every second. How many UPI payments do you make daily?",
+    "shots": [
+     "busy Indian market",
+     "person paying with phone"
+    ],
+    "callout": "HOW MANY DAILY",
+    "visual_query": "busy Indian market"
+   }
+  ]
+ },
+ "sources": [
+  {
+   "title": "Unified Payments Interface",
+   "url": "https://en.wikipedia.org/wiki/Unified_Payments_Interface",
+   "source": "Wikipedia"
+  },
+  {
+   "title": "National Payments Corporation of India",
+   "url": "https://en.wikipedia.org/wiki/National_Payments_Corporation_of_India",
+   "source": "Wikipedia"
+  }
+ ]
+}
