@@ -43,7 +43,7 @@ class State:
             return cls({}, path)
 
     def save(self):
-        self.data["stories"] = self.data["stories"][-500:]
+        self.data["stories"] = self.data["stories"][-3000:]    # ~1 year of topics at 8 videos/day
         self.data["uploads"] = self.data["uploads"][-1000:]
         self.data["pexels_used"] = self.data["pexels_used"][-400:]
         self.path.parent.mkdir(parents=True, exist_ok=True)

@@ -107,6 +107,16 @@ jobs:
           YOUTUBE_CLIENT_ID_GAMING: ${{ secrets.YOUTUBE_CLIENT_ID_GAMING }}
           YOUTUBE_CLIENT_SECRET_GAMING: ${{ secrets.YOUTUBE_CLIENT_SECRET_GAMING }}
           YOUTUBE_REFRESH_TOKEN_GAMING: ${{ secrets.YOUTUBE_REFRESH_TOKEN_GAMING }}
+          # Channels 2-5: each has its own YouTube token (set by the "Connect channels" workflow) and its own
+          # Gemini key (its own free Google Cloud project = its own daily quota). They reuse the shared OAuth client.
+          YOUTUBE_REFRESH_TOKEN_CRIME: ${{ secrets.YOUTUBE_REFRESH_TOKEN_CRIME }}
+          GEMINI_API_KEY_CRIME: ${{ secrets.GEMINI_API_KEY_CRIME }}
+          YOUTUBE_REFRESH_TOKEN_HEALTH: ${{ secrets.YOUTUBE_REFRESH_TOKEN_HEALTH }}
+          GEMINI_API_KEY_HEALTH: ${{ secrets.GEMINI_API_KEY_HEALTH }}
+          YOUTUBE_REFRESH_TOKEN_FINANCE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_FINANCE }}
+          GEMINI_API_KEY_FINANCE: ${{ secrets.GEMINI_API_KEY_FINANCE }}
+          YOUTUBE_REFRESH_TOKEN_DEBATE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_DEBATE }}
+          GEMINI_API_KEY_DEBATE: ${{ secrets.GEMINI_API_KEY_DEBATE }}
           CHANNEL: ${{ matrix.channel }}
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
           SMTP_USER: ${{ secrets.SMTP_USER }}

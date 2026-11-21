@@ -1,0 +1,92 @@
+# Paisa Tadka (@PaisaTadkaIN) — personal finance, how markets work & realistic side hustles. Education only,
+# SEBI-aware. Inherits technology.yaml. Switched on once YOUTUBE_REFRESH_TOKEN_FINANCE exists (README "Channels 2-5").
+extends: technology
+id: finance
+name: "Paisa Tadka"
+enabled: false
+niche: "Personal finance, how the stock market works and realistic side hustles, explained simply for India (education only)"
+audience: "Young Indians aged 20-40, from first salary to first SIP, who want to understand money, avoid scams and build safe habits"
+
+style:
+  persona: "A clear, honest money teacher: explains how things work with simple rupee examples, is openly sceptical of hype and 'easy money', and never tells anyone what to buy or sell."
+  rules:
+    - "Open with the most surprising money fact or the question people secretly have, not with context."
+    - "Explain concepts, history, rules and safe habits. Never recommend buying, selling or holding any stock, fund, coin or product, and never predict where a price or market is going."
+    - "Never name a listed company's share together with any recent price, and never discuss price data from the last three months (SEBI rules for educators)."
+    - "Never promise or imply returns. Past returns are history, not a forecast; say so whenever you mention them."
+    - "Hypothetical examples are fine only when clearly introduced as an example ('say you save 1,000 rupees a month') with correct arithmetic and round numbers."
+    - "Side hustles: only realistic, legal ideas, with honest effort and risk, and no income promises. Call out schemes, MLM and 'double your money' offers as red flags."
+    - "In the last scene say naturally: 'This is education, not financial advice.'"
+    - "Write the way people actually talk: contractions, short sentences mixed with longer ones, explain every term in one plain line."
+    - "End with one specific question that invites comments. Do not beg for likes or subscribes."
+  thumbnail_rules:
+    - "no promises of money or returns, no rupee amounts anyone will 'earn', no named stocks"
+    - "curiosity or myth-vs-fact contrasts are ideal ('YOUR SALARY IS LEAKING', 'BANKS WON'T TELL YOU')"
+  required_phrases: ["not financial advice"]
+  banned_phrases: ["game-changer", "revolutionize", "you won't believe", "mind-blowing", "stay tuned", "welcome back",
+                   "furthermore", "moreover", "delve", "in conclusion", "it is worth noting", "don't forget to subscribe",
+                   "smash that", "buckle up", "to the moon", "financial freedom guaranteed", "passive income guaranteed"]
+  forbidden_patterns:
+    - '\btarget price\b'
+    - '\bmulti-?baggers?\b'
+    - '\bsure[- ]?shot\b'
+    - '\b(buy|sell|accumulate|hold) (this|these) (stock|share|coin|fund)s?\b'
+    - '\bstop[- ]loss (at|of) \d'
+
+compliance:
+  - "No buy, sell or hold recommendation or hint about any specific stock, mutual fund, crypto coin, IPO or financial product."
+  - "No prediction of future prices, returns or market direction, and no price targets."
+  - "No named listed security discussed together with market price data from the preceding three months (SEBI)."
+  - "No promise or implication of guaranteed or assured returns or income; past returns must be described as history."
+  - "No promotion of a specific app, broker, platform or company."
+  - "Side hustles must be legal and realistic, with no income promises; schemes, MLM and get-rich-quick offers may only appear as warnings."
+  - "Clearly-labelled hypothetical examples are allowed; flag them only if the arithmetic is wrong or they read as a promise."
+  - "The narration must include the line that this is not financial advice."
+
+ranking_rules:
+  - "Only rule or policy changes from regulators (RBI, SEBI, government) that affect ordinary people's money: banking, UPI, loans, deposits, savings schemes, consumer protection, scams."
+  - "Market moves, company results, IPOs, stock or crypto news, and anything that would need naming a security score 1."
+
+schedule:
+  go_live:
+    short: ["08:30", "12:30", "15:45", "18:30", "20:30", "22:00"]
+    long: ["13:00", "20:00"]
+
+content_mix:
+  evergreen_share: 0.85
+evergreen:
+  memory_days: 365
+  hint: "how money concepts work (compound interest, inflation, SIP, mutual funds, index funds, credit score, EMI, insurance, emergency fund, UPI and banking), how the stock market works (what a share is, IPO, Sensex and Nifty, bull and bear markets, how exchanges work), famous money history (the 1992 securities scam, tulip mania, the dot-com bubble, the 2008 crisis, demonetisation explained neutrally), how scams work (Ponzi schemes, pump and dump, phishing, fake trading apps), realistic legal side hustles (freelancing, tutoring, reselling, content writing)"
+  rules:
+    - "Concepts, history, scam awareness, safe money habits and realistic legal side hustles only."
+    - "Never a topic about whether to buy or sell a specific stock, fund, coin or product, and nothing about trading strategies, intraday or futures and options tips."
+    - "Tax topics only as stable concepts (what a tax slab or TDS is), never this year's specific rates."
+  structure:
+    short: "HOOK (scene 1: a surprising money fact or the question people secretly have, max 12 words, and promise a payoff that comes LATER, e.g. 'and the last trick is the one banks hope you miss') -> the idea in one plain line -> how it works, step by step, every scene a NEW fact or a clearly-labelled rupee example so there is never a reason to swipe -> the common mistake or surprising detail (the promised payoff) -> the safe habit or the red flag to remember -> 'This is education, not financial advice.' -> a last line that echoes the opening so the video loops."
+    long: "COLD OPEN (1-2 scenes: a surprising money fact or a story from history, no greeting) -> the short answer -> promise what the viewer will understand by the end -> the background in plain words -> how it works, step by step, with clearly-labelled rupee examples and analogies -> a mini-cliffhanger before each new section ('but this is where most people lose money') -> a real story from history that shows it -> common myths and mistakes -> red flags and safe habits -> 'This is education, not financial advice.' -> one closing question for the comments -> a final line echoing the cold open. Every section teaches something new. Do NOT stop early: reach the full word count."
+
+sources:
+  feeds:
+    - {name: "RBI", url: "https://www.rbi.org.in/pressreleases_rss.xml"}
+    - {name: "SEBI", url: "https://www.sebi.gov.in/sebirss.xml"}
+
+voice:
+  providers: ["kokoro", "edge"]
+  providers_by_kind:
+    short: ["kokoro", "edge"]
+    long: ["kokoro", "edge"]
+  kokoro:
+    voice: "am_fenrir"         # steady male
+    speed: 1.0
+    lang: "en-us"
+  voices: ["en-IN-PrabhatNeural", "en-US-AndrewMultilingualNeural"]
+  rate: "+3%"
+
+visuals:
+  fallback_queries: ["indian rupee notes", "person using calculator", "piggy bank coins", "city skyline business", "stock market screen"]
+
+publish:
+  category_id: "27"            # Education
+  expected_channel: "Paisa Tadka"
+  disclosure: "Educational content only, not financial or investment advice. We are not SEBI-registered advisers and do not recommend any security, product or platform. Researched from the sources above. Narration is AI-generated."
+  hashtags: ["#PersonalFinance", "#FinancialLiteracy", "#India"]

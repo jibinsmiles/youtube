@@ -232,6 +232,7 @@ def _main(argv=None):
     args = ap.parse_args(argv)
 
     cfg = load_channel(args.channel)
+    os.environ.setdefault("CHANNEL", cfg["id"])     # per-channel secrets (e.g. GEMINI_API_KEY_<CHANNEL>) follow it
     if args.kind == "alert-test":
         from .notify import send_email
         ok = send_email(f"[Video robot] {cfg['name']}: test alert",
@@ -305,15 +306,20 @@ def _main(argv=None):
                 shutil.rmtree(workdir, ignore_errors=True)
 
             if args.dry_run:
+                import json as _json
+                video.with_suffix(".json").write_text(_json.dumps({"script": script, "sources": dossier["sources"]},
+                                                                  ensure_ascii=False, indent=1), encoding="utf-8")
                 log(f"🧪 Dry run — video saved at {video}\n   Title: {script['title']}")
                 return 0
 
-            from .uploader import build_service, upload_video
+            from .uploader import build_service, check_channel, upload_video
             go_live = None if (private_test or os.environ.get("PUBLISH_NOW") == "true") else next_go_live(cfg, kind, state, tz)
             if go_live:
                 log(f"🕒 Scheduling it to go public at its peak-viewership slot: {go_live}")
             try:
-                vid, privacy, publish_at = upload_video(build_service(cfg["id"]), cfg, kind, video, script,
+                service = build_service(cfg["id"])
+                check_channel(service, cfg)
+                vid, privacy, publish_at = upload_video(service, cfg, kind, video, script,
                                                         dossier["sources"], thumb, go_live_at=go_live)
             except Exception as e:
                 if "uploadLimitExceeded" in str(e) or "exceeded the number of videos" in str(e):

@@ -100,6 +100,33 @@ New niche = copy `channels/science.yaml`, change the id/name/feeds/voice/style.
 - **Quality over volume:** YouTube treats mass-produced, repetitive channels as "inauthentic content" and can
   refuse monetization. Start with 1-3 channels, watch what earns views, then add more.
 
+## Channels 2-5: Kaala Panna, Sehat Tadka, Paisa Tadka, Bahas Tadka
+| id | Channel | Niche | Kokoro voice | Safeguards (in `channels/<id>.yaml`) |
+|---|---|---|---|---|
+| `crime` | Kaala Panna (@KaalaPannaIN) | true crime, mysteries, history | bm_george | closed/historical cases only, no gore, no sexual-offence victims named, no guilt for unconvicted living people, theories labelled |
+| `health` | Sehat Tadka (@SehatTadkaIN) | health, fitness, nutrition myth-vs-fact | af_heart | no diagnosis, cures, doses, supplements or weight-loss numbers; "not medical advice" line required |
+| `finance` | Paisa Tadka (@PaisaTadkaIN) | personal finance, how markets work, side hustles | am_fenrir | education only (SEBI): no buy/sell/hold, targets, predictions, named stocks with recent prices or return promises; "not financial advice" line required |
+| `debate` | Bahas Tadka (@BahasTadkaIN) | both sides of debates, then the evidence | af_bella | no politics/religion/caste/communal/wars etc., no false balance on settled science, verdict only when evidence is clear |
+
+Each runs 6 Shorts + 2 long videos a day in the same morning batch (the scheduler dispatches Tech Tadka first, then
+every other enabled channel 45 s apart) and publishes at its own `schedule.go_live` slots. Safety works in three
+layers: topic rules (`evergreen.rules`, `ranking_rules`), writing rules (`style.rules`, `required_phrases`,
+`forbidden_patterns`) and the fact-check, which also flags breaks of the channel's `compliance` rules (the script is
+repaired once, otherwise nothing is published).
+
+**Per-channel secrets** (nothing is shared with Tech Tadka except the YouTube OAuth client and the footage key):
+- `GEMINI_API_KEY_<ID>` — each channel has its own free Google Cloud project ("<Name> Robot" in AI Studio), so its
+  own Gemini quota and Tech Tadka's key is never touched.
+- `YOUTUBE_REFRESH_TOKEN_<ID>` — written by the **Connect channels** workflow (needs `GH_SECRETS_TOKEN`, a
+  fine-grained GitHub token for this repo with only *Secrets: read and write*). Run it, enter the emailed codes at
+  google.com/device, pick the channel, Allow. Before every upload the robot checks the token belongs to
+  `publish.expected_channel`, so a mix-up can never post to the wrong channel.
+
+**Testing:** *Private test run* workflow (or push `.github/test-run.txt`): `channel kind mode upload|dry`.
+**Monitoring:** the scheduler starts *Daily check* at 21:32 IST; it emails you only if a channel made fewer videos
+than its target or has not uploaded for 26 h. Crashes, wrong-channel tokens, quota limits and audio problems email
+you immediately, as before.
+
 ## Things that will bite you
 - **Gemini model names.** Models get shut down. The client auto-discovers working models if the defaults
   fail; override with a `GEMINI_MODELS` env var (comma separated) if needed.

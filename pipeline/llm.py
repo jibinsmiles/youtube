@@ -5,6 +5,7 @@ we ask the API which models actually exist and try those, so the pipeline does
 not silently degrade to filler content.
 """
 import json
+import os
 import re
 import time
 
@@ -24,13 +25,17 @@ class LLMError(RuntimeError):
 
 class Gemini:
     def __init__(self):
-        self.key = env("GEMINI_API_KEY")
+        # A channel can have its own key (its own free Google Cloud project = its own daily quota):
+        # GEMINI_API_KEY_<CHANNEL>, e.g. GEMINI_API_KEY_CRIME. Otherwise the shared GEMINI_API_KEY is used.
+        channel = (os.environ.get("CHANNEL") or "").upper()
+        self.key = (env(f"GEMINI_API_KEY_{channel}") if channel else None) or env("GEMINI_API_KEY")
         if not self.key:
             raise LLMError("GEMINI_API_KEY is not set")
         override = env("GEMINI_MODELS")
         self.models = ([m.strip() for m in override.split(",") if m.strip()]
                        if override else list(DEFAULT_MODELS))
         self._discovered = False
+        self._spent = set()          # models whose free daily quota is used up: skipped for the rest of this run
 
     # -- model discovery ---------------------------------------------------
     def _discover(self):
@@ -86,6 +91,8 @@ class Gemini:
         last = "no models tried"
         for round_no in (0, 1):
             for model in list(self.models):
+                if model in self._spent:
+                    continue
                 for retry in range(3):
                     try:
                         r = requests.post(f"{API}/models/{model}:generateContent",
@@ -106,6 +113,12 @@ class Gemini:
                                 last = f"{model}: bad JSON ({e})"
                                 continue
                         return text
+                    if r.status_code == 429 and "PerDay" in r.text:
+                        # the free daily allowance of this model is gone: waiting will not help, use the next model
+                        self._spent.add(model)
+                        last = f"{model}: daily quota used up"
+                        log(f"ℹ️ {model}: free daily quota used up; using the next model for the rest of this run")
+                        break
                     if r.status_code in (429, 500, 502, 503, 504):
                         last = f"{model}: HTTP {r.status_code}"
                         time.sleep(6 * (retry + 1))

@@ -35,6 +35,7 @@ Score each candidate story from 1 to 10 for how well it would work as a video fo
 
 Score 1-3 for: unconfirmed rumours or leaks, tragedies, partisan political fights, press-release fluff,
 listicles, discount or deal posts. If several candidates are the same story, keep only the best one.
+{_extra_rules(cfg.get("ranking_rules"), "Channel rules (score 1 for anything that breaks them)")}
 
 For EACH candidate also set "topic_status" by comparing it with the recent videos above:
 - "new": a topic none of our recent videos covered.
@@ -80,8 +81,19 @@ Include only the {top_n} best stories, best first."""
 # ---------------------------------------------------------------------------
 # 2. Script generation
 # ---------------------------------------------------------------------------
+def _extra_rules(rules, heading):
+    """Optional per-channel rule list rendered as a prompt block ('' when the channel has none)."""
+    if not rules:
+        return ""
+    return f"\n{heading}:\n" + "\n".join(f"- {r}" for r in rules) + "\n"
+
+
 def _spec(kind, cfg, evergreen=False):
     f = cfg["formats"][kind]
+    custom = (((cfg.get("evergreen") or {}).get("structure") or {}).get(kind)) if evergreen else None
+    if custom:          # a channel can define its own storytelling shape (e.g. a case story or a both-sides debate)
+        return (f"Total narration: {f['target']} words. Each scene: {f['scene_words']} words. "
+                f"Structure: {custom}")
     if evergreen:
         structure = ("HOOK (scene 1: a surprising fact, a bold claim or a question the viewer has always wondered about; "
                      "it must make them need the answer, and promise a payoff that comes LATER, for example 'and the "
@@ -164,10 +176,15 @@ SOURCE MATERIAL:
 
 Return JSON exactly like:
 {{"title": "specific, curiosity-driven, max 65 chars, no clickbait lies, no emojis, no hashtags",
-  "thumbnail_text": "2-4 words that make people NEED to click, yet stay 100% true to the video: a curiosity gap, a surprising real number from the sources, a myth-vs-truth contrast or a bold question (examples of the style: 'YOUR PHONE LIES', 'WHY IT NEVER DROPS', '99% DON'T KNOW', 'NOT WHAT YOU THINK'). Never promise or imply anything the video does not deliver; no made-up numbers, no fake urgency",
+  "thumbnail_text": "2-4 words that make people NEED to click, yet stay 100% true to the video: a curiosity gap, a surprising real number from the sources, a myth-vs-truth contrast or a bold question (examples of the style: 'YOUR PHONE LIES', 'WHY IT NEVER DROPS', '99% DON'T KNOW', 'NOT WHAT YOU THINK'). Never promise or imply anything the video does not deliver; no made-up numbers, no fake urgency{_thumb_rules(cfg)}",
   "description": "2-3 plain sentences summarising the video",
   "tags": ["8-12 relevant tags"],
   "scenes": [{{"narration": "...", "shots": ["...", "..."], "callout": "..."}}]}}"""
+
+
+def _thumb_rules(cfg):
+    extra = (cfg.get("style") or {}).get("thumbnail_rules") or []
+    return ("; " + "; ".join(r.rstrip(".").replace('"', "'") for r in extra)) if extra else ""
 
 
 def _words(text):
@@ -223,6 +240,15 @@ def validate(script, kind, cfg):
     first = scenes[0].get("narration", "").lower()
     if re.match(r"\s*(welcome|hello|hey|hi |what's up|in today|today we)", first):
         problems.append("opening scene greets the viewer instead of hooking")
+    style = cfg["style"]
+    for phrase in style.get("required_phrases") or []:          # e.g. a "not medical advice" line
+        if phrase.lower() not in full:
+            problems.append(f'the narration must include the line "{phrase}" (say it naturally in the last scene)')
+    packaging = " ".join([script.get("title", ""), script.get("thumbnail_text", ""), script.get("description", ""), full])
+    for pat in style.get("forbidden_patterns") or []:            # hard safety gates, regex, case-insensitive
+        m = re.search(pat, packaging, re.I)
+        if m:
+            problems.append(f'contains forbidden content "{m.group(0)}" (channel safety rule); remove it')
     if any(not s.get("shots") for s in scenes):
         problems.append("a scene has no shots (stock-footage queries)")
     title = script.get("title", "")
@@ -284,8 +310,8 @@ def _total_words(script):
 # ---------------------------------------------------------------------------
 # 3. Fact-check
 # ---------------------------------------------------------------------------
-def fact_check(llm, script, dossier):
-    """Return a list of unsupported claims (empty = verified)."""
+def fact_check(llm, script, dossier, cfg=None):
+    """Return a list of unsupported claims and safety-rule violations (empty = verified)."""
     narration = "\n".join(s["narration"] for s in script["scenes"])
     packaging = (f"VIDEO TITLE: {script.get('title', '')}\n"
                  f"THUMBNAIL TEXT: {script.get('thumbnail_text', '')}\n"
@@ -310,9 +336,19 @@ A statement about what the source material itself does or does not mention (for 
 say when it reaches India") is acceptable if it is true. A claim that something has NOT been announced, is
 unavailable or does not exist, when the sources are silent on it, IS unsupported.
 
+{_compliance_block(cfg)}
 Return JSON: {{"unsupported": [{{"claim": "...", "reason": "..."}}]}}  (empty list if everything is supported)"""
     data = llm.json(prompt, temperature=0.0, max_tokens=2048)
     return data.get("unsupported", [])
+
+
+def _compliance_block(cfg):
+    rules = (cfg or {}).get("compliance") or []
+    if not rules:
+        return ""
+    return ("ALSO list, in the same JSON list, every line of the title, thumbnail text, description or narration that "
+            "breaks one of these channel SAFETY RULES (put the offending text in \"claim\" and \"breaks rule: ...\" in "
+            "\"reason\"). Be strict about these:\n" + "\n".join(f"- {r}" for r in rules) + "\n")
 
 
 def repair_script(llm, script, unsupported):
@@ -336,7 +372,7 @@ def verified_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
     if not script:
         return None
     for round_no in range(2):
-        unsupported = fact_check(llm, script, dossier)
+        unsupported = fact_check(llm, script, dossier, cfg)
         if not unsupported:
             log("✅ Fact-check passed")
             return script

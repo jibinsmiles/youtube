@@ -42,6 +42,9 @@ def wiki_extracts(titles, limit=9000):
 def propose_topics(llm, cfg, recent_titles, n=8):
     """Ask for timeless explainer topics in the niche: [{'topic', 'angle', 'wiki': [exact article titles]}]."""
     hint = (cfg.get("evergreen") or {}).get("hint", "")
+    topic_rules = (cfg.get("evergreen") or {}).get("rules") or []
+    rules = ("TOPIC RULES (never suggest a topic that breaks one):\n" + "\n".join(f"- {r}" for r in topic_rules) + "\n"
+             if topic_rules else "")
     avoid = "\n".join(f"- {t}" for t in recent_titles[:40]) or "- (none yet)"
     prompt = f"""You plan evergreen YouTube explainers for the channel "{cfg['name']}" ({cfg['niche']}).
 Audience: {cfg['audience']}
@@ -53,7 +56,7 @@ NOT tied to a specific news event or date.
 Prefer topics with a built-in curiosity gap that make people stop scrolling: something they use every day but
 have never understood, a surprising number or myth, "why does X do Y", "what really happens when you ...",
 "X vs Y: which is actually better". Skip dull, generic overviews ("What is technology")
-Do not repeat or closely resemble these recent videos:
+{rules}Do not repeat or closely resemble these recent videos:
 {avoid}
 
 For each topic give 1-3 EXACT English Wikipedia article titles that contain the facts needed (real articles only).
@@ -71,7 +74,7 @@ def make_story(topic, wiki_url):
 
 def candidates(llm, cfg, state, kind):
     """Yield (story, dossier, angle) for fresh evergreen topics, best first."""
-    recent = state.recent_videos(days=60)
+    recent = state.recent_videos(days=int((cfg.get("evergreen") or {}).get("memory_days", 60)))
     used = state.used_story_ids()
     limit = 4000 if kind == "short" else 9000
     seen = 0

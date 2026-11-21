@@ -12,10 +12,24 @@ from googleapiclient.http import MediaFileUpload
 from .config import env, log
 
 
+def oauth_client(channel_id):
+    """(client_id, client_secret) of the Google OAuth app used for this channel: its own if set, otherwise the
+    shared one, otherwise Tech Tadka's. scripts/connect_channels.py uses the same lookup, so a refresh token is always
+    used with the OAuth app that issued it."""
+    for suffix in (f"_{channel_id.upper()}", "", "_TECHNOLOGY"):
+        cid, sec = env(f"YOUTUBE_CLIENT_ID{suffix}"), env(f"YOUTUBE_CLIENT_SECRET{suffix}")
+        if cid and sec:
+            return cid, sec
+    return None, None
+
+
 def build_service(channel_id):
-    client_id = env(f"YOUTUBE_CLIENT_ID_{channel_id.upper()}") or env("YOUTUBE_CLIENT_ID")
-    secret = env(f"YOUTUBE_CLIENT_SECRET_{channel_id.upper()}") or env("YOUTUBE_CLIENT_SECRET")
-    refresh = env(f"YOUTUBE_REFRESH_TOKEN_{channel_id.upper()}") or env("YOUTUBE_REFRESH_TOKEN")
+    client_id, secret = oauth_client(channel_id)
+    refresh = env(f"YOUTUBE_REFRESH_TOKEN_{channel_id.upper()}")
+    if not refresh and channel_id == "technology":
+        refresh = env("YOUTUBE_REFRESH_TOKEN")      # only the original channel may use the old shared token
+    if not refresh:
+        raise RuntimeError(f"Missing YOUTUBE_REFRESH_TOKEN_{channel_id.upper()} — run the 'Connect channels' workflow")
     if not (client_id and secret and refresh):
         raise RuntimeError("Missing YouTube credentials (YOUTUBE_CLIENT_ID / _SECRET / _REFRESH_TOKEN)")
     creds = Credentials(None, refresh_token=refresh, token_uri="https://oauth2.googleapis.com/token",
@@ -27,6 +41,26 @@ def build_service(channel_id):
             "Could not refresh the YouTube token. If your Google OAuth app is in 'Testing' mode, refresh "
             f"tokens expire after 7 days — publish the app to 'In production' and re-authorise. ({e})")
     return build("youtube", "v3", credentials=creds, cache_discovery=False)
+
+
+def _norm(title):
+    return re.sub(r"[^a-z0-9]", "", (title or "").lower())
+
+
+def check_channel(service, cfg):
+    """Refuse to upload if the token belongs to a different channel than this config expects (1 quota unit).
+    Only for channels that set publish.expected_channel; returns the channel title."""
+    want = (cfg.get("publish") or {}).get("expected_channel")
+    if not want:
+        return None
+    items = service.channels().list(part="snippet", mine=True).execute().get("items") or []
+    titles = [i["snippet"]["title"] for i in items]
+    if _norm(want) not in [_norm(t) for t in titles]:
+        from .notify import alert
+        alert(cfg["name"], "token belongs to the wrong channel, upload refused",
+              f"Expected '{want}', the token is for {titles}. Re-run the 'Connect channels' workflow for this channel.")
+        raise RuntimeError(f"YouTube token is for {titles}, not '{want}' — upload refused")
+    return titles[0]
 
 
 def _clean(text, limit):

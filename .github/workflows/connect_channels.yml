@@ -1,0 +1,41 @@
+name: Connect channels
+
+# Links YouTube channels to the robot. Click "Run workflow"; you get an email (and the run page shows) one short code
+# per channel. Enter each at google.com/device, pick that channel, click Allow. The refresh token goes straight into
+# the repo secret YOUTUBE_REFRESH_TOKEN_<CHANNEL>; nobody ever sees it. Needs the GH_SECRETS_TOKEN secret (README).
+on:
+  workflow_dispatch:
+    inputs:
+      channels:
+        description: "Channel ids to connect, comma separated"
+        default: "crime,health,finance,debate"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: connect-channels
+  cancel-in-progress: true
+
+jobs:
+  connect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pyyaml pynacl google-api-python-client google-auth
+      - name: Send codes and wait for your Allow clicks
+        env:
+          GH_SECRETS_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_CLIENT_ID_TECHNOLOGY: ${{ secrets.YOUTUBE_CLIENT_ID_TECHNOLOGY }}
+          YOUTUBE_CLIENT_SECRET_TECHNOLOGY: ${{ secrets.YOUTUBE_CLIENT_SECRET_TECHNOLOGY }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+          INPUT_CHANNELS: ${{ github.event.inputs.channels }}
+        run: python scripts/connect_channels.py "${INPUT_CHANNELS:-crime,health,finance,debate}"

@@ -1,0 +1,88 @@
+# Sehat Tadka (@SehatTadkaIN) — health, fitness & quick nutrition: myth vs fact, education only. Inherits technology.yaml.
+# Switched on once YOUTUBE_REFRESH_TOKEN_HEALTH exists (see README "Channels 2-5").
+extends: technology
+id: health
+name: "Sehat Tadka"
+enabled: false
+niche: "Health, fitness and quick nutrition explained simply: myth vs fact, how the body works, what the science actually says"
+audience: "Busy Indians aged 18-45 who hear health advice from family WhatsApp groups and influencers and want quick, trustworthy, science-backed answers"
+
+style:
+  persona: "A friendly, evidence-first health explainer, like a smart friend who studied the science. Warm, clear, never preachy, never scary, and honest about what the evidence does not know yet."
+  rules:
+    - "Open with the common belief or the surprising fact, not with context."
+    - "Say plainly whether something is a myth, a fact or 'partly true', and why, using only what the sources support."
+    - "Educational only: never diagnose, never tell the viewer what treatment, medicine or supplement to take, never give doses, calorie targets or weight-loss numbers."
+    - "Never claim anything cures, prevents or reverses a disease unless that is the established consensus stated in the sources; describe evidence strength honestly ('strong evidence', 'early studies suggest')."
+    - "Respect Indian food habits and traditions; correct myths without mocking anyone."
+    - "In the last scene say naturally: 'This is general information, not medical advice' and, where relevant, suggest asking a doctor about your own health."
+    - "Write the way people actually talk: contractions, short sentences mixed with longer ones, plain words, no jargon without a one-line explanation."
+    - "End with one specific question that invites comments. Do not beg for likes or subscribes."
+  thumbnail_rules:
+    - "no cure claims, no body-shaming, no scary medical images or words"
+    - "myth-vs-fact contrasts are ideal ('MYTH OR FACT?', 'NOT WHAT YOUR MOM SAID')"
+  required_phrases: ["not medical advice"]
+  banned_phrases: ["game-changer", "revolutionize", "you won't believe", "mind-blowing", "stay tuned", "welcome back",
+                   "furthermore", "moreover", "delve", "in conclusion", "it is worth noting", "don't forget to subscribe",
+                   "smash that", "buckle up", "miracle", "superfood", "melt fat", "burn belly fat", "doctors hate"]
+  forbidden_patterns:
+    - '\b\d+(\.\d+)?\s?(mg|mcg|µg|iu)\b'
+    - '\blose \d+\s?(kg|kilos?|pounds|lbs)\b'
+    - '\b\d{3,4}\s?(calories|kcal) (a|per) day\b'
+
+compliance:
+  - "No diagnosis or telling the viewer they have a condition."
+  - "No claim that anything cures, prevents or reverses a disease unless it is the established medical consensus stated in the sources."
+  - "No advice to take, stop or change any medicine or supplement, and no doses of anything."
+  - "No calorie targets or weight-loss numbers; nothing that encourages extreme dieting, fasting or exercise."
+  - "Uncertain or early evidence must be labelled as uncertain."
+  - "The narration must include the line that this is not medical advice."
+
+ranking_rules:
+  - "Only findings or guidance from major health authorities (WHO, NIH, ICMR) or large reviews; single small studies, animal studies and supplement news score 1."
+  - "Outbreaks with deaths, tragedies and anything needing a diagnosis score 1."
+
+schedule:
+  go_live:
+    short: ["07:30", "10:00", "13:00", "17:30", "19:30", "21:30"]
+    long: ["12:00", "19:00"]
+
+content_mix:
+  evergreen_share: 0.9
+evergreen:
+  memory_days: 365
+  hint: "myth vs fact on Indian food habits (ghee, rice at night, fruit after meals, cold water, fasting), how the body works (sleep, digestion, muscles, metabolism, immunity, hydration), exercise science (walking, 10,000 steps, stretching, strength training), nutrition basics (protein, fibre, sugar, salt), everyday habits (screen time and eyes, posture, sun and vitamin D), famous medical discoveries"
+  rules:
+    - "Educational myth-vs-fact, how-the-body-works and exercise-science topics only, where the scientific consensus is clear."
+    - "No diagnosis topics, treatment plans, medicines, supplements, doses, weight-loss targets or specific branded products."
+    - "Avoid eating disorders, self-harm, suicide, drugs, alcohol misuse and sexual health."
+  structure:
+    short: "HOOK (scene 1: the common belief as a sharp question or the surprising fact, max 12 words, and promise a payoff that comes LATER, e.g. 'and the last part surprises even doctors') -> the short verdict: myth, fact or partly true -> why, step by step, every scene a NEW fact about how the body works so there is never a reason to swipe -> the surprising detail (the promised payoff) -> what it means in everyday life, in general terms -> 'This is general information, not medical advice.' -> a last line that echoes the opening question so the video loops."
+    long: "COLD OPEN (1-2 scenes: the belief everyone has heard, or the surprising fact, no greeting) -> the short verdict -> promise what the viewer will know by the end -> where the belief came from -> how the body actually works here, step by step, with everyday Indian examples and analogies -> a mini-cliffhanger before each new section ('but here is the part most people miss') -> what the strongest evidence says, and how sure scientists are -> related myths, each corrected -> what this means in daily life, in general terms -> 'This is general information, not medical advice; ask a doctor about your own health.' -> one closing question for the comments -> a final line echoing the cold open. Every section teaches something new. Do NOT stop early: reach the full word count."
+
+sources:
+  feeds:
+    - {name: "WHO", url: "https://www.who.int/rss-feeds/news-english.xml"}
+    - {name: "NIH", url: "https://www.nih.gov/news-releases/feed.xml"}
+    - {name: "ScienceDaily Health", url: "https://www.sciencedaily.com/rss/health_medicine.xml"}
+
+voice:
+  providers: ["kokoro", "edge"]
+  providers_by_kind:
+    short: ["kokoro", "edge"]
+    long: ["kokoro", "edge"]
+  kokoro:
+    voice: "af_heart"          # warm female, Kokoro's best-rated voice
+    speed: 1.0
+    lang: "en-us"
+  voices: ["en-IN-NeerjaExpressiveNeural", "en-IN-NeerjaNeural"]
+  rate: "+3%"
+
+visuals:
+  fallback_queries: ["healthy indian food", "person jogging park", "glass of water", "fresh vegetables market", "person sleeping"]
+
+publish:
+  category_id: "27"            # Education
+  expected_channel: "Sehat Tadka"
+  disclosure: "Educational content only, not medical advice. Talk to a qualified doctor about your own health. Researched from the sources above. Narration is AI-generated."
+  hashtags: ["#Health", "#Fitness", "#MythVsFact"]

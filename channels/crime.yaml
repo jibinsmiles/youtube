@@ -1,0 +1,82 @@
+# Kaala Panna (@KaalaPannaIN) — true crime, mysteries & historical stories. Inherits technology.yaml.
+# Switched on once YOUTUBE_REFRESH_TOKEN_CRIME exists (see README "Channels 2-5").
+extends: technology
+id: crime
+name: "Kaala Panna"
+enabled: false
+niche: "True crime, unsolved mysteries and gripping stories from history, told carefully and accurately"
+audience: "Indian viewers aged 18-40 who love true-crime, mystery and history stories, want the real documented facts, and dislike gore and sensationalism"
+
+style:
+  persona: "A calm, gripping documentary storyteller. Builds suspense with facts, not adjectives. Respectful about victims, never glamorises criminals, and clear about what is proven versus what is only a theory."
+  rules:
+    - "Open with the most gripping TRUE detail of the story, not with background. Never open with violence."
+    - "Tell it in time order like a story: who, where, when, then what happened next. Every scene adds a new documented fact (a date, a clue, a decision, a mistake)."
+    - "Only state what the sources document. Label every theory as a theory ('one theory is...', 'investigators believed...'). Never present speculation as fact."
+    - "Use 'accused', 'convicted' and 'acquitted' exactly as the sources do. Never call anyone guilty who was not convicted."
+    - "No graphic detail: do not describe injuries, gore, torture or how a killing was carried out. Say what happened in one plain, respectful sentence and move on."
+    - "Speak about victims with dignity and use their names only if the sources make them public figures of the case. Never name a victim of a sexual offence."
+    - "Never glamorise or joke about a criminal. Admiration is only for investigators, survivors and the truth coming out."
+    - "Write the way people actually talk: contractions, short punchy sentences mixed with longer ones, no stacked adjectives."
+    - "End with one specific question that invites comments (for example what the viewer thinks really happened). Do not beg for likes or subscribes."
+    - "Shots: never search for blood, bodies, weapons or violence. Use atmospheric, documentary footage: old streets, archives, maps, courtrooms, trains, fog, candles, newspapers, magnifying glass."
+  thumbnail_rules:
+    - "no blood, weapons, gore or violent words"
+    - "never call a living person a killer or criminal unless convicted in the sources"
+    - "never use a victim's name"
+  banned_phrases: ["game-changer", "revolutionize", "you won't believe", "mind-blowing", "stay tuned", "welcome back",
+                   "furthermore", "moreover", "delve", "in conclusion", "it is worth noting", "don't forget to subscribe",
+                   "smash that", "buckle up", "brutally", "gruesome", "bloodbath", "butchered", "chilling details"]
+  forbidden_patterns: ['\b(dismember\w*|decapitat\w*|mutilat\w*|disembowel\w*)\b']
+
+compliance:
+  - "No graphic description of violence, injuries, torture, bodies or methods of killing."
+  - "No naming or identifying a victim of rape or any sexual offence (forbidden under Indian law)."
+  - "No accusation or implication of guilt against any living person who was not convicted; suspects who were never charged or were acquitted must not be presented as guilty."
+  - "Speculation or theories must be clearly labelled as theories, never stated as fact."
+  - "No mocking or disrespectful language about victims or their families; no glamorising of criminals."
+  - "No cases that are still under investigation, on trial or under appeal."
+
+schedule:
+  go_live:
+    short: ["09:30", "13:00", "17:00", "20:00", "22:00", "23:15"]
+    long: ["14:00", "21:00"]
+
+content_mix:
+  evergreen_share: 1.0         # only well-documented historical/closed cases, never breaking crime news
+evergreen:
+  memory_days: 365             # never repeat a case within a year
+  hint: "famous heists and cons, historical mysteries (Roopkund skeleton lake, Dyatlov Pass, Mary Celeste, the Voynich manuscript, the journey of the Kohinoor), spies and espionage, forensic firsts (fingerprinting began in British India), famous disappearances, landmark trials of the past (the Nanavati case), great frauds and how they unravelled, lost treasures. About half Indian stories, half world stories"
+  rules:
+    - "Only cases that are closed (final court verdict or officially closed) or historical mysteries at least 30 years old. Never anything still under investigation, on trial or under appeal."
+    - "No cases whose victims were children, and no cases centred on sexual violence."
+    - "No terror attacks, massacres, communal riots or mass-casualty events."
+    - "No cases where the main suspect is a living person who was never convicted."
+    - "Pick stories with a real hook: a twist, a clever clue, an unsolved question or an astonishing detail, and with a detailed Wikipedia article."
+  structure:
+    short: "HOOK (scene 1: the most gripping true detail of the story in max 12 words, never violent, and promise a payoff that comes LATER, e.g. 'and the clue that cracked it was tiny') -> who, where and when in one line -> the story unfolds in order, every scene adding a NEW documented fact so there is never a reason to swipe -> the twist, the clue or the unanswered question (the promised payoff) -> how it ended, as recorded (or the leading theories, each labelled as a theory) -> a last line that echoes the opening line so the video loops, plus one open question."
+    long: "COLD OPEN (1-2 scenes: the most gripping true moment of the story, no greeting, no gore) -> promise what the viewer will understand by the end (the twist or the open question) -> the world and people before it happened -> the story in chapters, in time order, each chapter ending on a mini-cliffhanger ('but nobody noticed one thing') -> the investigation: clues, mistakes, breakthroughs -> the payoff: how it was solved, or the leading theories each labelled as a theory with the evidence for and against -> the outcome as recorded (verdict, sentence, what happened to the people) -> what changed because of it (laws, forensics, security) -> a respectful line about the victims -> one closing question for the comments -> a final line that echoes the cold open. Every scene teaches a new, specific, documented fact. Do NOT stop early: reach the full word count."
+
+sources:
+  feeds: []
+
+voice:
+  providers: ["kokoro", "edge"]
+  providers_by_kind:
+    short: ["kokoro", "edge"]
+    long: ["kokoro", "edge"]
+  kokoro:
+    voice: "bm_george"         # calm British storyteller
+    speed: 0.95
+    lang: "en-gb"
+  voices: ["en-GB-RyanNeural", "en-IN-PrabhatNeural"]
+  rate: "+0%"
+
+visuals:
+  fallback_queries: ["old city street at night", "vintage newspaper", "foggy forest", "old typewriter", "magnifying glass"]
+
+publish:
+  category_id: "27"            # Education
+  expected_channel: "Kaala Panna"
+  disclosure: "Researched from the sources above (documented, closed or historical cases only). Theories are labelled as theories. Narration is AI-generated."
+  hashtags: ["#TrueCrime", "#Mystery", "#History"]

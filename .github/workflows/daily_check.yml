@@ -1,0 +1,29 @@
+name: Daily check
+
+# Started by the scheduler at 21:32 IST. Emails you only if a channel made fewer videos than its daily target.
+on:
+  workflow_dispatch:
+    inputs:
+      always:
+        description: "Email even when everything is fine (test)"
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml requests tzdata
+      - env:
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+          ALWAYS: ${{ github.event.inputs.always }}
+        run: python scripts/daily_check.py $([ "$ALWAYS" = "true" ] && echo --always)

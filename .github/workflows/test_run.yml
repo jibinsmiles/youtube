@@ -1,0 +1,109 @@
+name: Private test run
+
+# Makes PRIVATE test videos (not recorded, topic stays available) for review before a channel goes live.
+# Start it with "Run workflow", or by pushing a change to .github/test-run.txt (one "channel kind mode upload" per line;
+# upload = upload a private video, dry = render only and keep the file as a downloadable run artifact).
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: "Space-separated channel:kind:mode items, e.g. crime:short:auto health:long:evergreen"
+        default: "crime:short:auto"
+  push:
+    branches: [main]
+    paths: [".github/test-run.txt"]
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      items: ${{ steps.list.outputs.items }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        env:
+          RUNS: ${{ github.event.inputs.runs }}
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json, os
+          raw = os.environ.get("RUNS") or ""
+          if raw.strip():
+              lines = [x.replace(":", " ") for x in raw.split()]
+          else:
+              lines = [l for l in open(".github/test-run.txt") if l.strip() and not l.startswith("#")]
+          items = []
+          for l in lines:
+              p = l.split()
+              p += ["short", "auto", "upload"][len(p) - 1:]
+              items.append({"channel": p[0], "kind": p[1], "mode": p[2], "upload": p[3]})
+          print("items=" + json.dumps(items))
+          EOF
+
+  run:
+    needs: prepare
+    if: needs.prepare.outputs.items != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        item: ${{ fromJSON(needs.prepare.outputs.items) }}
+    concurrency:
+      group: video-robot-${{ matrix.item.channel }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: System packages (ffmpeg + fonts)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Python packages
+        run: pip install -r requirements.txt
+      - name: Cache the free Kokoro voice model
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: kokoro-v1.0
+      - name: Private test (${{ matrix.item.channel }} ${{ matrix.item.kind }} ${{ matrix.item.mode }})
+        env:
+          CHANNEL: ${{ matrix.item.channel }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_CLIENT_ID_TECHNOLOGY: ${{ secrets.YOUTUBE_CLIENT_ID_TECHNOLOGY }}
+          YOUTUBE_CLIENT_SECRET_TECHNOLOGY: ${{ secrets.YOUTUBE_CLIENT_SECRET_TECHNOLOGY }}
+          YOUTUBE_REFRESH_TOKEN_CRIME: ${{ secrets.YOUTUBE_REFRESH_TOKEN_CRIME }}
+          GEMINI_API_KEY_CRIME: ${{ secrets.GEMINI_API_KEY_CRIME }}
+          YOUTUBE_REFRESH_TOKEN_HEALTH: ${{ secrets.YOUTUBE_REFRESH_TOKEN_HEALTH }}
+          GEMINI_API_KEY_HEALTH: ${{ secrets.GEMINI_API_KEY_HEALTH }}
+          YOUTUBE_REFRESH_TOKEN_FINANCE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_FINANCE }}
+          GEMINI_API_KEY_FINANCE: ${{ secrets.GEMINI_API_KEY_FINANCE }}
+          YOUTUBE_REFRESH_TOKEN_DEBATE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_DEBATE }}
+          GEMINI_API_KEY_DEBATE: ${{ secrets.GEMINI_API_KEY_DEBATE }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+        run: |
+          case "$CHANNEL" in technology) echo "Refusing to test-run Tech Tadka from here"; exit 1;; esac
+          KEYVAR="GEMINI_API_KEY_${CHANNEL^^}"
+          if [ -z "${!KEYVAR}" ]; then echo "::error::$KEYVAR is not set yet - not using Tech Tadka's shared key"; exit 1; fi
+          EXTRA="--visibility private"
+          [ "${{ matrix.item.upload }}" = "dry" ] && EXTRA="--dry-run"
+          python -m pipeline.main --channel "$CHANNEL" --kind "${{ matrix.item.kind }}" --mode "${{ matrix.item.mode }}" $EXTRA
+      - name: Keep the rendered video (dry runs)
+        if: always() && matrix.item.upload == 'dry'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-${{ matrix.item.channel }}-${{ matrix.item.kind }}
+          path: out/
+          retention-days: 3
+          if-no-files-found: ignore
