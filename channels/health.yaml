@@ -95,8 +95,21 @@ fact_check_notes:
   - "Do not flag the narrator's framing, analogies or clearly hypothetical examples as long as they add no new factual claim."
 
 formats:
+  short:
+    min_words: 80              # a Short under ~35 s is too thin to hold viewers
   long:
     expand_rounds: 4           # free "lite" models write long scripts short; give them more rounds to deepen the draft
 
 research:
   fact_check_rounds: 3         # check, repair, check, repair, check: unsupported lines are cut, never kept
+
+repair_notes:
+  - "Replace each unsupported claim with the closest fact the SOURCE MATERIAL does support, just as specific as the original (a name, number, date, mechanism or example). If nothing fits, delete the sentence and strengthen a neighbouring line with another specific sourced fact."
+  - "Never replace a specific claim with vague filler ('processes remain active', 'a method once helped', 'this is an important topic')."
+  - "For a safety-rule break, rewrite the line so it complies (remove the dose or the recommendation, label the theory as a theory, drop the graphic detail)."
+  - "Scene 1 must stay a gripping, specific hook; if its claim was unsupported, open with the most surprising supported fact instead."
+  - "Keep the title and thumbnail text specific and intriguing using only supported facts; never turn them into a textbook heading."
+  - "Keep about the same length, the structure, the promised payoff, the looping last line and any required disclaimer line."
+
+quality_gate:
+  min_score: 6                 # an editor pass scores hook, specificity, payoff and packaging; below 6 = try another topic

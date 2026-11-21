@@ -356,8 +356,25 @@ def _compliance_block(cfg):
             "\"reason\"). Be strict about these:\n" + "\n".join(f"- {r}" for r in rules) + "\n")
 
 
-def repair_script(llm, script, unsupported):
+def repair_script(llm, script, unsupported, cfg=None, dossier=None):
     issues = "\n".join(f"- {u.get('claim')} ({u.get('reason')})" for u in unsupported)
+    notes = (cfg or {}).get("repair_notes")
+    if notes and dossier:          # channels that opt in: repair with the sources at hand, never with vague filler
+        rules = "\n".join(f"- {n}" for n in notes)
+        prompt = f"""Here is a video script as JSON:
+{json.dumps(script, ensure_ascii=False)}
+
+A fact-checker found these problems (unsupported claims or safety-rule breaks):
+{issues}
+
+Fix ONLY those lines. Rules:
+{rules}
+
+SOURCE MATERIAL (every fact must come from here):
+{dossier['text']}
+
+Keep the same JSON format and keys. Return the full corrected JSON only."""
+        return normalize_scenes(llm.json(prompt, temperature=0.4, max_tokens=16000))
     prompt = f"""Here is a video script as JSON:
 {json.dumps(script, ensure_ascii=False)}
 
@@ -371,6 +388,39 @@ Return the full corrected JSON only."""
     return normalize_scenes(llm.json(prompt, temperature=0.3, max_tokens=16000))
 
 
+def quality_ok(llm, cfg, kind, script):
+    """Optional retention gate (channels with quality_gate set): reject flat, vague scripts instead of publishing them."""
+    gate = cfg.get("quality_gate")
+    if not gate:
+        return True
+    narration = "\n".join(f"{i + 1}. {s['narration']}" for i, s in enumerate(script["scenes"]))
+    prompt = f"""You are a tough YouTube retention editor for "{cfg['name']}" ({cfg['niche']}).
+TITLE: {script.get('title', '')}
+THUMBNAIL TEXT: {script.get('thumbnail_text', '')}
+SCRIPT ({'Short' if kind == 'short' else 'long video'}):
+{narration}
+
+Score 1-10 each:
+- hook: does scene 1 state a specific, surprising, concrete fact or sharp question that makes people stay? Vague or generic openers ("How does your body work?", "A method once helped") score 1-3.
+- specificity: does EVERY scene give a concrete new fact (a name, number, date, mechanism, example)? Filler lines ("processes remain active", "this is an important topic") pull the score down hard.
+- payoff: is something promised early and delivered later, and does the last line loop back to the opening?
+- packaging: are the title and thumbnail text specific and intriguing (not a textbook heading) yet true to the script?
+Return JSON: {{"hook": 0, "specificity": 0, "payoff": 0, "packaging": 0, "worst_lines": ["..."]}}"""
+    try:
+        d = llm.json(prompt, temperature=0.0, max_tokens=1024)
+        scores = {k: float(d.get(k, 0)) for k in ("hook", "specificity", "payoff", "packaging")}
+    except Exception as e:                  # the gate must never crash a run; fail closed
+        log(f"⚠️ Quality gate unavailable ({type(e).__name__}); skipping this script")
+        return False
+    need = float(gate.get("min_score", 6)) if isinstance(gate, dict) else 6.0
+    weak = {k: v for k, v in scores.items() if v < need}
+    if weak:
+        log(f"📉 Quality gate: too weak {weak} (need {need}); trying another topic. Worst lines: {d.get('worst_lines', [])[:3]}")
+        return False
+    log(f"📈 Quality gate passed {scores}")
+    return True
+
+
 def verified_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
     """Write, fact-check, repair once if needed. Returns None if it cannot be made trustworthy."""
     script = write_script(llm, cfg, kind, story, dossier, angle, avoid_titles)
@@ -381,11 +431,11 @@ def verified_script(llm, cfg, kind, story, dossier, angle, avoid_titles=()):
         unsupported = fact_check(llm, script, dossier, cfg)
         if not unsupported:
             log("✅ Fact-check passed")
-            return script
+            return script if quality_ok(llm, cfg, kind, script) else None
         log(f"🔍 Fact-check found {len(unsupported)} unsupported claim(s): {unsupported[:3]}")
         if round_no == rounds - 1:
             break
-        script = repair_script(llm, script, unsupported)
+        script = repair_script(llm, script, unsupported, cfg, dossier)
         if validate(script, kind, cfg):
             return None
     return None

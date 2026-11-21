@@ -1,4 +1,4 @@
-# Private test runs: one "channel kind mode upload|dry" per line. Pushing a change here starts them.
+# Private test runs: one "channel kind mode upload|dry" per line. Pushing a change here starts them. (round 2)
 crime short evergreen dry
 health short evergreen dry
 finance short evergreen dry
