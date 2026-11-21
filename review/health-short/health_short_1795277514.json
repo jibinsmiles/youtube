@@ -1,0 +1,94 @@
+{
+ "script": {
+  "title": "Does Drinking Water During Meals Ruin Digestion?",
+  "thumbnail_text": "WATER WITH MEALS?",
+  "description": "Does drinking water while eating dilute your stomach acid and ruin digestion? Let us look at what the science actually says about how your stomach works.",
+  "tags": [
+   "health myths",
+   "stomach acid",
+   "digestion science",
+   "drinking water during meals",
+   "human body facts",
+   "nutrition myths",
+   "evidence based health",
+   "sehat tadka"
+  ],
+  "scenes": [
+   {
+    "narration": "Does drinking water during meals ruin your digestion, and what actually happens inside?",
+    "shots": [
+     "person drinking water",
+     "glass of water"
+    ],
+    "callout": "WATER WITH MEALS",
+    "visual_query": "person drinking water"
+   },
+   {
+    "narration": "The idea that water washes away stomach acid is a complete myth.",
+    "shots": [
+     "stomach anatomy chart",
+     "laboratory beaker"
+    ],
+    "callout": "A COMPLETE MYTH",
+    "visual_query": "stomach anatomy chart"
+   },
+   {
+    "narration": "Your stomach produces about one point five liters of acidic gastric juice daily.",
+    "shots": [
+     "medical science book",
+     "scientific laboratory"
+    ],
+    "callout": "",
+    "visual_query": "medical science book"
+   },
+   {
+    "narration": "This fluid has a very strong pH between one and three to break down food.",
+    "shots": [
+     "ph test strip",
+     "stomach lining view"
+    ],
+    "callout": "STRONG PH",
+    "visual_query": "ph test strip"
+   },
+   {
+    "narration": "It actively regulates production using feedback systems to increase acid when needed after a meal.",
+    "shots": [
+     "digestive system graphic",
+     "human digestive tract"
+    ],
+    "callout": "FEEDBACK SYSTEMS",
+    "visual_query": "digestive system graphic"
+   },
+   {
+    "narration": "This means drinking water does not stop your stomach from doing its chemical job.",
+    "shots": [
+     "person eating meal",
+     "water glass on table"
+    ],
+    "callout": "CHEMICAL JOB",
+    "visual_query": "person eating meal"
+   },
+   {
+    "narration": "This is general information, not medical advice. Does drinking water help you eat slower?",
+    "shots": [
+     "indian thali meal",
+     "person smiling eating"
+    ],
+    "callout": "NOT MEDICAL ADVICE",
+    "visual_query": "indian thali meal"
+   }
+  ]
+ },
+ "sources": [
+  {
+   "title": "Gastric acid",
+   "url": "https://en.wikipedia.org/wiki/Gastric_acid",
+   "source": "Wikipedia"
+  },
+  {
+   "title": "Digestion",
+   "url": "https://en.wikipedia.org/wiki/Digestion",
+   "source": "Wikipedia"
+  }
+ ]
+}
