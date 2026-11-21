@@ -1,3 +1,1 @@
 # Private test runs: one "channel kind mode upload|dry" per line. Pushing a change here starts them.
-debate short evergreen dry
-debate long evergreen dry

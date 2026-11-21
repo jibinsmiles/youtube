@@ -86,6 +86,7 @@ llm:
 fact_check_notes:
   - "Numbers written out in words for the narrator ('two thousand one', 'ten crore') mean the same as digits; never flag how a number, name or title is spelled or formatted."
   - "Do not flag the narrator's framing, analogies or clearly hypothetical examples as long as they add no new factual claim."
+  - "A faithful paraphrase of a sourced statement is supported (e.g. 'unprecedented intensity' -> 'one of the fiercest debates'); flag only facts that are missing from, or contradict, the sources."
 
 formats:
   short:
