@@ -3,7 +3,7 @@
 extends: technology
 id: health
 name: "Sehat Tadka"
-enabled: false
+enabled: true
 niche: "Health, fitness and quick nutrition explained simply: myth vs fact, how the body works, what the science actually says"
 audience: "Busy Indians aged 18-45 who hear health advice from family WhatsApp groups and influencers and want quick, trustworthy, science-backed answers"
 
@@ -51,6 +51,8 @@ content_mix:
   evergreen_share: 0.9
 evergreen:
   memory_days: 365
+  focus_sections: ["health", "effect", "myth", "misconception", "research", "evidence", "nutrition", "benefit", "risk",
+                   "mechanism", "function", "physiology"]
   hint: "myth vs fact on Indian food habits (ghee, rice at night, fruit after meals, cold water, fasting), how the body works (sleep, digestion, muscles, metabolism, immunity, hydration), exercise science (walking, 10,000 steps, stretching, strength training), nutrition basics (protein, fibre, sugar, salt), everyday habits (screen time and eyes, posture, sun and vitamin D), famous medical discoveries"
   rules:
     - "Educational myth-vs-fact, how-the-body-works and exercise-science topics only, where the scientific consensus is clear."

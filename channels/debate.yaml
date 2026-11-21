@@ -43,11 +43,14 @@ content_mix:
   evergreen_share: 1.0
 evergreen:
   memory_days: 365
+  focus_sections: ["debate", "controvers", "criticism", "argument", "pros", "advantage", "disadvantage", "benefit",
+                   "risk", "health effect", "environmental", "safety", "effect", "research", "evidence", "opposition",
+                   "support", "concern", "impact", "views", "reception"]
   hint: "everyday debates that split opinion: food and health (is breakfast the most important meal, is ghee healthy, is coffee good for you), lifestyle (early birds vs night owls, work from home vs office, is 10,000 steps real), tech (is AI art real art, are electric cars really greener, should kids have smartphones), education (should homework exist, do degrees still matter), science and energy (is nuclear power safe), sport (is T20 killing Test cricket), history's great debates (was the Titanic avoidable, did Napoleon really lose because of the weather)"
   rules:
     - "Never: party politics, politicians, elections, religion, caste, communal topics, regional or language disputes, wars, borders, terrorism, abortion, sexuality or gender identity, guns, immigration, or any ongoing court case or recent tragedy."
     - "Never frame settled science as a debate (vaccine safety, climate change, evolution, the shape of the Earth); those can only appear as myths being corrected."
-    - "Pick debates with genuinely good arguments on both sides and a detailed Wikipedia article covering them."
+    - "Pick debates with genuinely good arguments on both sides, AND name Wikipedia articles that discuss the arguments themselves: prefer dedicated articles ('Nuclear power debate', 'Daylight saving time', 'Homework', 'Smartphone addiction', 'Environmental impact of electric vehicles', 'Artificial intelligence art') or articles with a Controversy / Criticism / Health effects / Debate section. A general article that only describes the thing ('Walking', 'Breakfast') is NOT enough."
     - "The topic phrase must be the debate question, e.g. 'Is nuclear power safe?'"
   structure:
     short: "HOOK (scene 1: the debate as a sharp question or the most surprising fact, max 12 words, and promise a payoff that comes LATER, e.g. 'and the data at the end surprises both sides') -> why people disagree, in one line -> the strongest case FOR, each scene a NEW fact -> the strongest case AGAINST, same weight, each scene a NEW fact -> what the evidence actually says (the promised payoff), with a verdict only if the sources clearly support one -> 'which side are you on?' -> a last line that echoes the opening question so the video loops."

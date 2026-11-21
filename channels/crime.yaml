@@ -3,7 +3,7 @@
 extends: technology
 id: crime
 name: "Kaala Panna"
-enabled: false
+enabled: true
 niche: "True crime, unsolved mysteries and gripping stories from history, told carefully and accurately"
 audience: "Indian viewers aged 18-40 who love true-crime, mystery and history stories, want the real documented facts, and dislike gore and sensationalism"
 

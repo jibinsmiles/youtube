@@ -3,7 +3,7 @@
 extends: technology
 id: finance
 name: "Paisa Tadka"
-enabled: false
+enabled: true
 niche: "Personal finance, how the stock market works and realistic side hustles, explained simply for India (education only)"
 audience: "Young Indians aged 20-40, from first salary to first SIP, who want to understand money, avoid scams and build safe habits"
 

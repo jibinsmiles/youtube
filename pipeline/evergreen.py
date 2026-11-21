@@ -17,14 +17,27 @@ WIKI_API = "https://en.wikipedia.org/w/api.php"
 WIKI_UA = "EvergreenVideoBot/1.0 (https://github.com/jibinsmiles/youtube; automated educational explainers)"
 
 
-def wiki_extracts(titles, limit=9000):
-    """Plain-text extracts of existing Wikipedia articles: [(title, url, text)] (missing pages are dropped)."""
+def _focus(text, keywords):
+    """Move the sections whose heading matches a keyword to the front (wiki-format extract in, plain text out)."""
+    parts = re.split(r"^(=+)\s*(.*?)\s*=+\s*$", text, flags=re.M)
+    intro, sections = parts[0], []
+    for i in range(1, len(parts) - 2, 3):
+        sections.append((parts[i + 1], parts[i + 2]))
+    hit = [s for s in sections if any(k in s[0].lower() for k in keywords)]
+    rest = [s for s in sections if s not in hit]
+    out = [intro.strip()] + [f"{h}:\n{b.strip()}" for h, b in hit + rest if b.strip()]
+    return "\n".join(x for x in out if x)
+
+
+def wiki_extracts(titles, limit=9000, focus=None):
+    """Plain-text extracts of existing Wikipedia articles: [(title, url, text)] (missing pages are dropped).
+    focus: optional heading keywords; matching sections are moved up so they survive the length limit."""
     out = []
     for title in titles[:4]:
         try:
             r = requests.get(WIKI_API, headers={"User-Agent": WIKI_UA}, timeout=25, params={
                 "action": "query", "format": "json", "prop": "extracts", "explaintext": 1, "redirects": 1,
-                "exsectionformat": "plain", "titles": title})
+                "exsectionformat": "wiki" if focus else "plain", "titles": title})
             r.raise_for_status()
             pages = (r.json().get("query") or {}).get("pages") or {}
         except Exception as e:
@@ -32,6 +45,8 @@ def wiki_extracts(titles, limit=9000):
             continue
         for page in pages.values():
             text = re.sub(r"\n{2,}", "\n", (page.get("extract") or "")).strip()
+            if focus:
+                text = _focus(text, [k.lower() for k in focus])
             if "missing" in page or len(text) < 600:
                 continue
             real = page.get("title", title)
@@ -84,7 +99,7 @@ def candidates(llm, cfg, state, kind):
         if story.id in used or jac >= 0.5:
             log(f"♻️ Evergreen topic already covered, skipping: {t['topic']}")
             continue
-        pages = wiki_extracts(t["wiki"], limit)
+        pages = wiki_extracts(t["wiki"], limit, (cfg.get("evergreen") or {}).get("focus_sections"))
         if not pages:
             log(f"⏭️ No usable Wikipedia text for: {t['topic']}")
             continue
