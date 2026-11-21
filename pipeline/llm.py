@@ -23,6 +23,10 @@ class LLMError(RuntimeError):
     pass
 
 
+class QuotaExhausted(LLMError):
+    """Every usable model's free daily quota is spent (it resets at midnight Pacific time = 13:30 IST)."""
+
+
 class Gemini:
     def __init__(self):
         # A channel can have its own key (its own free Google Cloud project = its own daily quota):
@@ -131,6 +135,9 @@ class Gemini:
                 self._discover()
                 continue
             break
+        if self._spent:
+            raise QuotaExhausted(f"Gemini free daily quota used up for {sorted(self._spent)} "
+                                 f"(resets 13:30 IST). Last error: {last}")
         raise LLMError(f"All Gemini models failed. Last error: {last}")
 
     def json(self, prompt, **kw):

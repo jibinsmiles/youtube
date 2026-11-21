@@ -215,6 +215,13 @@ def main(argv=None):
     except SystemExit:
         raise
     except Exception as e:
+        from .llm import QuotaExhausted
+        if isinstance(e, QuotaExhausted):          # not a bug: stop cleanly, say so in plain words, retry later
+            alert(os.environ.get('CHANNEL', 'pipeline'), "Gemini free daily quota used up (resets 13:30 IST)",
+                  "No more videos can be written today on the free Gemini allowance for this channel. The robot "
+                  "retries automatically after the reset; nothing to do unless this happens every day.\n\n" + str(e)[:600])
+            log(f"⏸️ {e}")
+            return 0
         import traceback
         alert(os.environ.get('CHANNEL', 'pipeline'), f"run crashed: {type(e).__name__}", traceback.format_exc()[-1800:])
         raise
